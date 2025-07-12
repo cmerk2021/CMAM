@@ -10,6 +10,7 @@
 #           list        List installed apps with versions
 #           info        Shows details about an app
 #           search      Search available apps in the online manifest
+#           self-update Update CMAM
 #           ------------------------------------------------------------------------------
 #           repair      Uninstall and reinstall a corrupted app
 #           validate    Check if all installed apps have expected checksums
@@ -235,6 +236,11 @@ def info():
 @app.command()
 def search():
     """Searches for apps available in the remote repository."""
+    pass
+
+@app.command()
+def self_update():
+    """Updates CMAM."""
     pass
 
 @app.command()
