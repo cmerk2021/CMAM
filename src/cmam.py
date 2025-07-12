@@ -168,7 +168,7 @@ def install(
         tmp_path = rf"C:\\.cmam\\scripts\\{app_name}.exe.tmp"
         exe_path = rf"C:\\.cmam\\scripts\\{app_name}.exe"
 
-        status.update("[bold green]Downloading and verifying...[/bold green]")
+        status.stop()
         try:
             sha256 = hashlib.sha256()
             with requests.get(exe_url, stream=True) as r:
@@ -204,6 +204,7 @@ def install(
             raise typer.Exit(code=1)
 
         # Update PATH
+        status.start()
         status.update("[bold green]Finalizing PATH...[/bold green]")
         add_folder_to_path(r"C:\\.cmam\\scripts")
 
