@@ -1,3 +1,6 @@
 {
-    
+    "pyrdstextgenerator": {
+        "link": "cmerk2021/PyRDSTextGenerator",
+        "dependencies": ""
+    }
 }
