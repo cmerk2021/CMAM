@@ -1,7 +1,7 @@
 # CMAM - Connor Merk App Manager
 # Package manager for installing and managing Connor Merk's applications.
 # Copyright (c) 2025 Connor Merk
-# VERSION: 1.2.0
+# VERSION: 1.4.0
 
 # COMMANDS: ------------------------------------------------------------------------------
 #           install     Install an app with latest or specified version
