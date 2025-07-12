@@ -5,7 +5,7 @@
 
 # COMMANDS: ------------------------------------------------------------------------------
 #           install     Install an app with latest or specified version
-#           update     	Update an app to the latest or specific version
+#           update      	Update an app to the latest or specific version
 #           uninstall   Uninstall a currently installed app
 #           list        List installed apps with versions
 #           info        Shows details about an app
@@ -38,7 +38,7 @@ import ctypes
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, DownloadColumn, TimeRemainingColumn
 
 console = Console()
 app = typer.Typer(
@@ -165,27 +165,42 @@ def install(
             console.print("[bold red]❌ No .exe asset found in release.[/bold red]")
             raise typer.Exit(code=1)
 
-        exe_response = requests.get(exe_url)
-        exe_response.raise_for_status()
+        tmp_path = rf"C:\\.cmam\\scripts\\{app_name}.exe.tmp"
+        exe_path = rf"C:\\.cmam\\scripts\\{app_name}.exe"
 
-        # Checksum verification
-        status.update("[bold green]Verifying checksum...[/bold green]")
-        if not checksum:
-            console.print("[bold yellow]⚠ No checksum provided. Skipping verification.[/bold yellow]")
-        else:
-            sha256 = hashlib.sha256(exe_response.content).hexdigest()
-            if f"sha256:{sha256}" != checksum:
-                console.print("[bold red]❌ Checksum mismatch. Aborting install.[/bold red]")
-                raise typer.Exit(code=1)
-
-        # Write executable
-        status.update("[bold green]Installing application...[/bold green]")
+        status.update("[bold green]Downloading and verifying...[/bold green]")
         try:
-            exe_path = fr"C:\\.cmam\\scripts\\{app_name}.exe"
-            with open(exe_path, 'wb') as f:
-                f.write(exe_response.content)
+            sha256 = hashlib.sha256()
+            with requests.get(exe_url, stream=True) as r:
+                r.raise_for_status()
+                total = int(r.headers.get('Content-Length', 0))
+                with open(tmp_path, 'wb') as f, Progress(
+                    SpinnerColumn(),
+                    TextColumn("{task.description}"),
+                    BarColumn(),
+                    DownloadColumn(),
+                    TimeRemainingColumn(),
+                    transient=True,
+                ) as progress:
+                    task = progress.add_task("[cyan]Downloading...", total=total)
+                    for chunk in r.iter_content(chunk_size=8192):
+                        if chunk:
+                            sha256.update(chunk)
+                            f.write(chunk)
+                            progress.update(task, advance=len(chunk))
+
+            if checksum:
+                if f"sha256:{sha256.hexdigest()}" != checksum:
+                    console.print("[bold red]❌ Checksum mismatch. Aborting install.[/bold red]")
+                    os.remove(tmp_path)
+                    raise typer.Exit(code=1)
+            else:
+                console.print("[bold yellow]⚠ No checksum provided. Skipping verification.[/bold yellow]")
+
+            os.replace(tmp_path, exe_path)
+
         except Exception as e:
-            console.print(f"[bold red]❌ Installation failed: {e}[/bold red]")
+            console.print(f"[bold red]❌ Failed to download or verify: {e}[/bold red]")
             raise typer.Exit(code=1)
 
         # Update PATH
