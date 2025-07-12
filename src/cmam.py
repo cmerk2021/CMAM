@@ -35,6 +35,7 @@ import base64
 import typer
 import hashlib
 import ctypes
+import shutil
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
@@ -98,7 +99,7 @@ def install(
 
     with console.status("[bold green]Preparing installation...[/bold green]") as status:
         if os.path.exists(rf"C:\\.cmam\\scripts\\{app_name}.exe"):
-            console.print(f"[bold red]⚠ App [blue]{app_name}[/blue] is already installed. Use [bold blue]update[/bold blue] instead.[/bold red]")
+            console.print(f"[bold red]⚠ App [blue] {app_name}[/blue] is already installed. Use [bold blue]update[/bold blue] instead.[/bold red]")
             raise typer.Exit(code=1)
 
         for folder in [r"C:\\.cmam", r"C:\\.cmam\\.cache", r"C:\\.cmam\\scripts"]:
@@ -230,9 +231,26 @@ def install(
     if not already_in_path: console.print("[yellow]💡 Tip: Restart your terminal to apply PATH changes.[/yellow]")
 
 @app.command()
-def update():
-    """Updates an installed app to the latest or specified version."""
-    pass
+def update(
+    app_name: str = typer.Argument(..., help="Name of the app to update."),
+    version: str = typer.Option(None, "--version", "-v", help="Specify a version to update to.")
+):
+    """Installs a specified application from the CMAM repository."""
+
+    console.print(f"[bold cyan]🔧 Updating [green]{app_name}[/green]"
+        + (f" [magenta](v{version})[/magenta]" if version else "") + "...[/bold cyan]")
+    
+    if not os.path.exists(rf"C:\\.cmam\\scripts\\{app_name}.exe"):
+        console.print(f"[bold red]⚠ App [blue] {app_name}[/blue] is not installed. Use [bold blue]install[/bold blue] instead.[/bold red]")
+        raise typer.Exit(code=1)
+    
+    status = console.status("[bold green]Preparing to update... [/bold green]")
+    status.start()
+
+    status.update("[bold green]Backing up old files...[/bold green]")
+
+    shutil.copy2(fr"C:\\.cmam\scripts\{app_name}.exe", fr"C:\\.cmam\scripts\{app_name}.exe.bak")
+
 
 @app.command()
 def uninstall():
