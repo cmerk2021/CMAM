@@ -1,12 +1,12 @@
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  CMAM - Connor Merk App Manager                                           ║
-# ║  Package manager for installing and managing Connor Merk's applications.  ║
-# ║  Copyright (c) 2025 Connor Merk                                          ║
-# ║  VERSION: 1.4.0                                                          ║
+# ║  CMAM - Connor Merk App Manager                                            ║
+# ║  Package manager for installing and managing Connor Merk's applications.   ║
+# ║  Copyright (c) 2025 Connor Merk                                            ║
+# ║  VERSION: 1.5.0                                                            ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  IMPORTS                                                                 ║
+# ║  IMPORTS                                                                   ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 import os
@@ -26,7 +26,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, DownloadColumn, TimeRemainingColumn
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  CONSTANTS & GLOBALS                                                     ║
+# ║  CONSTANTS & GLOBALS                                                       ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 CMAM_ROOT = r"C:\\.cmam"
@@ -44,18 +44,38 @@ app = typer.Typer(
 already_in_path = False
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  UTILITY FUNCTIONS                                                       ║
+# ║  UTILITY FUNCTIONS                                                         ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 def parse_version(v: str):
-    """Parse a version string into a tuple of integers."""
-    return tuple(map(int, v.strip("v").split(".")))
+    """Parse a version string into a comparable tuple, handling pre-releases."""
+    import re
+
+    v = v.strip("v")
+    match = re.match(r"(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9]+))?", v)
+    if not match:
+        raise ValueError(f"Invalid version format: {v}")
+
+    major, minor, patch, pre = match.groups()
+    version_tuple = (int(major), int(minor), int(patch))
+
+    # Pre-release precedence (lower = earlier)
+    pre_map = {
+        None: 3,         # final release has highest precedence
+        "rc": 2,
+        "beta": 1,
+        "alpha": 0
+    }
+
+    pre_key = pre_map.get(pre.lower(), -1) if pre else pre_map[None]
+
+    return version_tuple + (pre_key,)
 
 def print_banner():
     """Prints the CMAM startup banner."""
     console.print(
         Panel(
-            "[bold blue]CMAM[/bold blue] [white]v1.4.0[/white]\n"
+            "[bold blue]CMAM[/bold blue] [white]v1.5.0[/white]\n"
             "[green]Connor Merk App Manager[/green]\n"
             "[dim]https://github.com/cmerk2021/cmam[/dim]",
             border_style="blue",
@@ -136,7 +156,7 @@ def not_implemented_message(command: str):
     console.print(f"[yellow]⚠ The '{command}' command is not yet implemented. Stay tuned![/yellow]")
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  MAIN COMMANDS                                                           ║
+# ║  MAIN COMMANDS                                                             ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 @app.command()
@@ -262,7 +282,8 @@ def install(
 @app.command()
 def update(
     app_name: str = typer.Argument(..., help="Name of the app to update."),
-    version: str = typer.Option(None, "--version", "-v", help="Specify a version to update to.")
+    version: str = typer.Option(None, "--version", "-v", help="Specify a version to update to."),
+    keep_backup: bool = typer.Option(False, "--keep-backup", "-k", help="Keep backup of the old binary."),
 ):
     """Updates an application from the CMAM repository."""
 
@@ -332,6 +353,7 @@ def update(
 
         status.update("[bold green]Downloading new binary...[/bold green]")
         try:
+            status.stop()
             sha256 = hashlib.sha256()
             with requests.get(exe_url, stream=True) as r:
                 r.raise_for_status()
@@ -361,8 +383,13 @@ def update(
 
             os.replace(tmp_path, exe_path)
 
+            status.start()
+
         except Exception as e:
             console.print(f"[bold red]❌ Failed to download or verify: {e}[/bold red]")
+            if os.path.exists(exe_path + ".bak"):
+                shutil.move(exe_path + ".bak", exe_path)
+                console.print("[yellow]🔁 Restored previous version from backup.[/yellow]")
             raise typer.Exit(code=1)
 
         status.update("[bold green]Finalizing PATH...[/bold green]")
@@ -371,6 +398,10 @@ def update(
         status.update("[bold green]Saving metadata...[/bold green]")
         data[app_name] = {"version": new_version}
         save_local_packages(data)
+
+    if os.path.exists(exe_path + ".bak") and not keep_backup:
+        os.remove(exe_path + ".bak")
+
 
     console.print(Panel(
         f"[bold green]✅ {app_name} v{new_version} updated successfully![/bold green]\n\n"
@@ -382,7 +413,7 @@ def update(
         console.print("[yellow]💡 Tip: Restart your terminal to apply PATH changes.[/yellow]")
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  PLACEHOLDER/NOT IMPLEMENTED COMMANDS                                    ║
+# ║  PLACEHOLDER/NOT IMPLEMENTED COMMANDS                                      ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 @app.command()
@@ -461,17 +492,7 @@ def rollback():
     not_implemented_message("rollback")
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  DUMMY COMMAND FOR TESTING                                               ║
-# ╚════════════════════════════════════════════════════════════════════════════╝
-
-@app.command()
-def hello():
-    """Says hello. Placeholder command."""
-    print_banner()
-    console.print("[green]👋 Hello from CMAM![/green]")
-
-# ╔════════════════════════════════════════════════════════════════════════════╗
-# ║  ENTRY POINT & ERROR HANDLING                                            ║
+# ║  ENTRY POINT & ERROR HANDLING                                              ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 def main():
