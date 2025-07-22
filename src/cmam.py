@@ -296,6 +296,9 @@ def update(
         console.print(f"[bold red]⚠ App [blue]{app_name}[/blue] is not installed. Use [bold blue]install[/bold blue] instead.[/bold red]")
         raise typer.Exit(code=1)
 
+    os.makedirs(backup_dir, exist_ok=True)
+    backup_path = os.path.join(backup_dir, f"{app_name}.exe.bak")
+
     with console.status("[bold green]Preparing update...[/bold green]") as status:
         status.update("[bold green]Fetching application manifest...[/bold green]")
         app_manifest = fetch_manifest()
@@ -349,7 +352,8 @@ def update(
         tmp_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe.tmp")
 
         status.update("[bold green]Backing up old binary...[/bold green]")
-        shutil.copy2(exe_path, exe_path + ".bak")
+        shutil.copy2(exe_path, backup_path)
+
 
         status.update("[bold green]Downloading new binary...[/bold green]")
         try:
