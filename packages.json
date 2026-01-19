@@ -3,5 +3,10 @@
         "link": "cmerk2021/PyRDSTextGenerator",
         "dependencies": "",
         "description": "Text generator for Connor Merk Radio RDS."
+    },
+    "lunar": {
+        "link": "cmerk2021/lunar-terminal",
+        "dependencies": "",
+        "description": "Powerful Lua REPL for Windows"
     }
 }
