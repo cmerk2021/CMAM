@@ -1,6 +1,7 @@
 {
     "pyrdstextgenerator": {
         "link": "cmerk2021/PyRDSTextGenerator",
-        "dependencies": ""
+        "dependencies": "",
+        "description": "Text generator for Connor Merk Radio RDS."
     }
 }
