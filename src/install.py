@@ -1,7 +1,7 @@
 # ╔════════════════════════════════════════════════════════════════════════════╗
 # ║  CMAM Installer                                                            ║
 # ║  Installs CMAM to C:\.cmam\scripts and adds it to PATH                     ║
-# ║  Copyright (c) 2025 Connor Merk                                            ║
+# ║  Copyright (c) 2026 Connor Merk                                            ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 import os

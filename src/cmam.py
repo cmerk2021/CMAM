@@ -1,7 +1,7 @@
 # ╔════════════════════════════════════════════════════════════════════════════╗
 # ║  CMAM - Connor Merk App Manager                                            ║
 # ║  Package manager for installing and managing Connor Merk's applications.   ║
-# ║  Copyright (c) 2025 Connor Merk                                            ║
+# ║  Copyright (c) 2026 Connor Merk                                            ║
 # ║  VERSION: 1.5.0                                                            ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
