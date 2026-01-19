@@ -30,7 +30,7 @@ from typing import Optional, List
 # ║  CONSTANTS & GLOBALS                                                       ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
-CMAM_VERSION = "2.0.0"
+CMAM_VERSION = "2.1.0"
 CMAM_ROOT = r"C:\.cmam"
 CMAM_CACHE = os.path.join(CMAM_ROOT, ".cache")
 CMAM_SCRIPTS = os.path.join(CMAM_ROOT, "scripts")
@@ -58,13 +58,31 @@ def main_callback(
     version: bool = typer.Option(None, "--version", "-V", callback=version_callback, is_eager=True, help="Show version and exit.")
 ):
     """CMAM: Connor Merk App Manager"""
-    pass
+    check_cmam_update()
 
 already_in_path = False
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
 # ║  UTILITY FUNCTIONS                                                         ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
+
+def check_cmam_update():
+    """Check if a newer version of CMAM is available and warn the user."""
+    try:
+        api_url = f"https://api.github.com/repos/{CMAM_REPO}/releases/latest"
+        response = requests.get(api_url, timeout=3)
+        response.raise_for_status()
+        release_data = response.json()
+        latest_version = release_data.get("tag_name", "").lstrip("v")
+        
+        if latest_version and parse_version(latest_version) > parse_version(CMAM_VERSION):
+            console.print(
+                f"[bold yellow]⚠ A new version of CMAM is available: v{latest_version} (current: v{CMAM_VERSION})[/bold yellow]\n"
+                f"[dim]Run 'cmam self-update' to update.[/dim]\n"
+            )
+    except Exception:
+        # Silently ignore any errors - don't interrupt the user's command
+        pass
 
 def parse_version(v: str):
     """Parse a version string into a comparable tuple, handling pre-releases."""
@@ -512,6 +530,172 @@ def update(
     ))
     if not already_in_path:
         console.print("[yellow]💡 Tip: Restart your terminal to apply PATH changes.[/yellow]")
+
+@app.command("update-all")
+def update_all(
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt."),
+    keep_backup: bool = typer.Option(True, "--keep-backup", "-k", help="Keep backups of old binaries."),
+):
+    """Checks and updates all installed apps to their latest versions."""
+    print_banner()
+    console.print("[bold cyan]🔄 Checking for updates for all installed apps...[/bold cyan]\n")
+    
+    data = load_local_packages()
+    
+    if not data:
+        console.print("[yellow]📭 No apps installed.[/yellow]")
+        return
+    
+    # Check for updates
+    updates_available = []
+    
+    with console.status("[bold green]Fetching manifest and checking versions...[/bold green]"):
+        manifest = fetch_manifest()
+        
+        for app_name, info in data.items():
+            current_version = info.get("version", "unknown")
+            
+            if app_name not in manifest:
+                continue
+            
+            app_link = manifest[app_name]["link"]
+            release_info = fetch_release_info(app_link)
+            
+            if not release_info:
+                continue
+            
+            latest_version = release_info.get("tag_name", "").lstrip("v")
+            
+            if current_version != latest_version and latest_version:
+                try:
+                    if parse_version(latest_version) > parse_version(current_version):
+                        updates_available.append({
+                            'name': app_name,
+                            'current': current_version,
+                            'latest': latest_version
+                        })
+                except Exception:
+                    # Skip apps with invalid version formats
+                    pass
+    
+    if not updates_available:
+        console.print("[bold green]✅ All apps are up to date![/bold green]")
+        return
+    
+    # Show what will be updated
+    table = Table(title="[bold blue]Updates Available[/bold blue]")
+    table.add_column("App", style="cyan")
+    table.add_column("Current", style="yellow")
+    table.add_column("Latest", style="green")
+    
+    for update in updates_available:
+        table.add_row(
+            update['name'],
+            f"v{update['current']}",
+            f"v{update['latest']}"
+        )
+    
+    console.print(table)
+    console.print(f"\n[bold]{len(updates_available)} update(s) available[/bold]")
+    
+    # Confirm
+    if not yes and not Confirm.ask("\n[bold cyan]Proceed with updates?[/bold cyan]"):
+        console.print("[yellow]Update cancelled.[/yellow]")
+        return
+    
+    # Perform updates
+    console.print("\n[bold cyan]Starting updates...[/bold cyan]\n")
+    
+    success_count = 0
+    fail_count = 0
+    failed_apps = []
+    
+    for update_info in updates_available:
+        app_name = update_info['name']
+        console.print(f"[bold]Updating {app_name}...[/bold]")
+        
+        try:
+            # Perform the update using existing update logic
+            exe_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe")
+            current_version = update_info['current']
+            new_version = update_info['latest']
+            
+            with console.status(f"[bold green]Updating {app_name}...[/bold green]") as status:
+                app_link = manifest[app_name]["link"]
+                api_url = f"https://api.github.com/repos/{app_link}/releases/latest"
+                
+                response = requests.get(api_url)
+                response.raise_for_status()
+                release_data = response.json()
+                
+                exe_url, checksum = None, None
+                for asset in release_data.get('assets', []):
+                    if asset.get('name', '').lower().endswith('.exe'):
+                        exe_url = asset.get('browser_download_url')
+                        checksum = asset.get("digest")
+                        break
+                
+                if not exe_url:
+                    raise Exception("No .exe asset found")
+                
+                if keep_backup:
+                    status.update("[bold green]Backing up...[/bold green]")
+                    create_backup(app_name, current_version)
+                
+                tmp_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe.tmp")
+                
+                status.stop()
+                sha256 = hashlib.sha256()
+                with requests.get(exe_url, stream=True) as r:
+                    r.raise_for_status()
+                    total = int(r.headers.get('Content-Length', 0))
+                    with open(tmp_path, 'wb') as f, Progress(
+                        SpinnerColumn(),
+                        TextColumn(f"{{task.description}} [dim]{app_name}[/dim]"),
+                        BarColumn(),
+                        DownloadColumn(),
+                        TimeRemainingColumn(),
+                        transient=True,
+                    ) as progress:
+                        task = progress.add_task("[cyan]Downloading...", total=total)
+                        for chunk in r.iter_content(chunk_size=8192):
+                            if chunk:
+                                sha256.update(chunk)
+                                f.write(chunk)
+                                progress.update(task, advance=len(chunk))
+                
+                if checksum and f"sha256:{sha256.hexdigest()}" != checksum:
+                    os.remove(tmp_path)
+                    raise Exception("Checksum mismatch")
+                
+                os.replace(tmp_path, exe_path)
+                status.start()
+                
+                status.update("[bold green]Saving metadata...[/bold green]")
+                data = load_local_packages()
+                data[app_name]["version"] = new_version
+                save_local_packages(data)
+            
+            console.print(f"  [green]✓[/green] {app_name} updated to v{new_version}\n")
+            success_count += 1
+            
+        except Exception as e:
+            console.print(f"  [red]✗[/red] Failed to update {app_name}: {e}\n")
+            fail_count += 1
+            failed_apps.append(app_name)
+    
+    # Summary
+    console.print(Panel(
+        f"[bold green]Update complete![/bold green]\n\n"
+        f"✅ Successfully updated: {success_count}\n"
+        f"❌ Failed: {fail_count}" +
+        (f"\n\n[red]Failed apps:[/red] {', '.join(failed_apps)}" if failed_apps else ""),
+        title="[bold blue]CMAM[/bold blue]",
+        border_style="green" if fail_count == 0 else "yellow"
+    ))
+    
+    if success_count > 0 and not already_in_path:
+        console.print("[yellow]💡 Tip: Restart your terminal if PATH changes were made.[/yellow]")
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
 # ║  IMPLEMENTED COMMANDS                                                      ║
