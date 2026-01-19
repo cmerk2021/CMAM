@@ -45,6 +45,14 @@ Or, alternatively download and run the installer executable from the latest rele
 4. Add `C:\.cmam\scripts` to your PATH environment variable
 5. Restart your terminal
 
+### Updating
+
+To update CMAM when installed, simply run:
+
+```
+cmam self-update
+```
+
 ## 🚀 Usage
 
 ### Installing an Application
