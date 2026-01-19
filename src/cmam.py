@@ -296,6 +296,7 @@ def update(
         console.print(f"[bold red]⚠ App [blue]{app_name}[/blue] is not installed. Use [bold blue]install[/bold blue] instead.[/bold red]")
         raise typer.Exit(code=1)
 
+    backup_dir = os.path.join(CMAM_CACHE, "backups")
     os.makedirs(backup_dir, exist_ok=True)
     backup_path = os.path.join(backup_dir, f"{app_name}.exe.bak")
 
