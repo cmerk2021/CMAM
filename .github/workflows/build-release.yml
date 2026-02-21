@@ -31,15 +31,14 @@ jobs:
 
       - name: Extract version from cmam.py
         id: get_version
+        shell: python
         run: |
-          $script = @"
-          import re
-          content = open('src/cmam.py').read()
-          match = re.search(r'CMAM_VERSION\s*=\s*[\"\'](.*?)[\"\']\s*', content)
-          print(match.group(1))
-          "@
-          $version = $script | python
-          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          import re, os
+          content = open('src/cmam.py', encoding='utf-8').read()
+          match = re.search(r"CMAM_VERSION\s*=\s*[\"'](.*?)[\"']", content)
+          version = match.group(1)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f'VERSION={version}\n')
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
