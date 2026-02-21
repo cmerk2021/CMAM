@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-release:
     runs-on: windows-latest  # Required for building .exe files
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
