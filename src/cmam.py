@@ -30,7 +30,7 @@ from typing import Optional, List
 # ║  CONSTANTS & GLOBALS                                                       ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
-CMAM_VERSION = "2.1.0"
+CMAM_VERSION = "2.2.0"
 CMAM_ROOT = r"C:\.cmam"
 CMAM_CACHE = os.path.join(CMAM_ROOT, ".cache")
 CMAM_SCRIPTS = os.path.join(CMAM_ROOT, "scripts")
