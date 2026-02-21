@@ -174,16 +174,17 @@ def fetch_release_info(repo: str, version: str = None):
     except requests.RequestException:
         return None
 
-def get_exe_asset(release_data: dict):
-    """Extract exe asset info from release data."""
+def get_exe_assets(release_data: dict) -> List[dict]:
+    """Extract all exe asset info from release data."""
+    results = []
     for asset in release_data.get('assets', []):
         if asset.get('name', '').lower().endswith('.exe'):
-            return {
+            results.append({
                 'url': asset.get('browser_download_url'),
                 'checksum': asset.get('digest'),
                 'filename': asset['name']
-            }
-    return None
+            })
+    return results
 
 def calculate_file_checksum(filepath: str) -> str:
     """Calculate SHA256 checksum of a file."""
@@ -224,6 +225,64 @@ def create_backup(app_name: str, version: str):
         shutil.copy2(exe_path, backup_path)
         return backup_path
     return None
+
+def download_dependencies(release_data: dict, app_data: dict, dest_folder: str) -> List[str]:
+    """Download dependency files listed in the manifest from the release assets.
+    
+    Looks at app_data['dependencies'] (list of file names) and finds matching
+    assets in the release. Downloads each one to dest_folder.
+    Returns a list of downloaded file names.
+    """
+    deps = app_data.get("dependencies", [])
+    # Filter out empty strings
+    deps = [d.strip() for d in deps if d and d.strip()]
+    if not deps:
+        return []
+
+    assets = release_data.get('assets', [])
+    asset_map = {asset['name']: asset for asset in assets}
+
+    downloaded = []
+    for dep_name in deps:
+        if dep_name not in asset_map:
+            console.print(f"[bold yellow]⚠ Dependency '{dep_name}' not found in release assets. Skipping.[/bold yellow]")
+            continue
+
+        asset = asset_map[dep_name]
+        dep_url = asset.get('browser_download_url')
+        if not dep_url:
+            console.print(f"[bold yellow]⚠ No download URL for dependency '{dep_name}'. Skipping.[/bold yellow]")
+            continue
+
+        dest_path = os.path.join(dest_folder, dep_name)
+        tmp_path = dest_path + ".tmp"
+
+        try:
+            console.print(f"[dim]  Downloading dependency: {dep_name}[/dim]")
+            with requests.get(dep_url, stream=True) as r:
+                r.raise_for_status()
+                total = int(r.headers.get('Content-Length', 0))
+                with open(tmp_path, 'wb') as f, Progress(
+                    SpinnerColumn(),
+                    TextColumn("{task.description}"),
+                    BarColumn(),
+                    DownloadColumn(),
+                    TimeRemainingColumn(),
+                    transient=True,
+                ) as progress:
+                    task = progress.add_task(f"[cyan]{dep_name}[/cyan]", total=total)
+                    for chunk in r.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                            progress.update(task, advance=len(chunk))
+            os.replace(tmp_path, dest_path)
+            downloaded.append(dep_name)
+        except Exception as e:
+            console.print(f"[bold yellow]⚠ Failed to download dependency '{dep_name}': {e}[/bold yellow]")
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+    return downloaded
 
 def get_backups(app_name: str) -> List[dict]:
     """Get list of backups for an app, sorted by version (newest first)."""
@@ -337,57 +396,65 @@ def install(
             raise typer.Exit(code=1)
 
         release_data = response.json()
-        exe_url, checksum, exe_filename = None, None, None
         app_version = release_data.get("tag_name")
 
-        for asset in release_data.get('assets', []):
-            if asset.get('name', '').lower().endswith('.exe'):
-                exe_url = asset.get('browser_download_url')
-                checksum = asset.get("digest")
-                exe_filename = asset['name']
-                break
+        exe_assets = get_exe_assets(release_data)
 
-        if not exe_url:
+        if not exe_assets:
             console.print("[bold red]❌ No .exe asset found in release.[/bold red]")
             raise typer.Exit(code=1)
 
-        tmp_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe.tmp")
-        exe_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe")
-
         status.stop()
+        installed_exes = []
         try:
-            sha256 = hashlib.sha256()
-            with requests.get(exe_url, stream=True) as r:
-                r.raise_for_status()
-                total = int(r.headers.get('Content-Length', 0))
-                with open(tmp_path, 'wb') as f, Progress(
-                    SpinnerColumn(),
-                    TextColumn("{task.description}"),
-                    BarColumn(),
-                    DownloadColumn(),
-                    TimeRemainingColumn(),
-                    transient=True,
-                ) as progress:
-                    task = progress.add_task("[cyan]Downloading...", total=total)
-                    for chunk in r.iter_content(chunk_size=8192):
-                        if chunk:
-                            sha256.update(chunk)
-                            f.write(chunk)
-                            progress.update(task, advance=len(chunk))
+            for exe_asset in exe_assets:
+                exe_url = exe_asset['url']
+                checksum = exe_asset['checksum']
+                exe_filename = exe_asset['filename']
+                # First exe uses app_name, additional ones keep their original name
+                if not installed_exes:
+                    dest_name = f"{app_name}.exe"
+                else:
+                    dest_name = exe_filename
+                dest_path = os.path.join(CMAM_SCRIPTS, dest_name)
+                tmp_path = dest_path + ".tmp"
 
-            if checksum:
-                if f"sha256:{sha256.hexdigest()}" != checksum:
-                    console.print("[bold red]❌ Checksum mismatch. Aborting install.[/bold red]")
-                    os.remove(tmp_path)
-                    raise typer.Exit(code=1)
-            else:
-                console.print("[bold yellow]⚠ No checksum provided. Skipping verification.[/bold yellow]")
+                sha256 = hashlib.sha256()
+                with requests.get(exe_url, stream=True) as r:
+                    r.raise_for_status()
+                    total = int(r.headers.get('Content-Length', 0))
+                    with open(tmp_path, 'wb') as f, Progress(
+                        SpinnerColumn(),
+                        TextColumn("{task.description}"),
+                        BarColumn(),
+                        DownloadColumn(),
+                        TimeRemainingColumn(),
+                        transient=True,
+                    ) as progress:
+                        task = progress.add_task(f"[cyan]Downloading {dest_name}...[/cyan]", total=total)
+                        for chunk in r.iter_content(chunk_size=8192):
+                            if chunk:
+                                sha256.update(chunk)
+                                f.write(chunk)
+                                progress.update(task, advance=len(chunk))
 
-            os.replace(tmp_path, exe_path)
+                if checksum:
+                    if f"sha256:{sha256.hexdigest()}" != checksum:
+                        console.print(f"[bold red]❌ Checksum mismatch for {dest_name}. Aborting install.[/bold red]")
+                        os.remove(tmp_path)
+                        raise typer.Exit(code=1)
+                elif not installed_exes:
+                    console.print("[bold yellow]⚠ No checksum provided. Skipping verification.[/bold yellow]")
+
+                os.replace(tmp_path, dest_path)
+                installed_exes.append(dest_name)
 
         except Exception as e:
             console.print(f"[bold red]❌ Failed to download or verify: {e}[/bold red]")
             raise typer.Exit(code=1)
+
+        # Download dependencies
+        dep_files = download_dependencies(release_data, app_data, CMAM_SCRIPTS)
 
         status.start()
         status.update("[bold green]Finalizing PATH...[/bold green]")
@@ -395,7 +462,12 @@ def install(
 
         status.update("[bold green]Saving metadata...[/bold green]")
         data = load_local_packages()
-        data[app_name] = {"version": app_version.replace("v", "")}
+        pkg_meta = {"version": app_version.replace("v", "")}
+        # Track extra exes (beyond the primary one) and dependencies
+        extra_files = dep_files + [e for e in installed_exes[1:] if e not in dep_files]
+        if extra_files:
+            pkg_meta["dependencies"] = extra_files
+        data[app_name] = pkg_meta
         save_local_packages(data)
 
     console.print(Panel(
@@ -459,55 +531,63 @@ def update(
             console.print(f"[bold yellow]⚠ App [blue]{app_name}[/blue] is already at version [magenta]{new_version}[/magenta]. No update needed.[/bold yellow]")
             raise typer.Exit(code=0)
 
-        exe_url, checksum, exe_filename = None, None, None
-        for asset in release_data.get('assets', []):
-            if asset.get('name', '').lower().endswith('.exe'):
-                exe_url = asset.get('browser_download_url')
-                checksum = asset.get("digest")
-                exe_filename = asset['name']
-                break
+        exe_assets = get_exe_assets(release_data)
 
-        if not exe_url:
+        if not exe_assets:
             console.print("[bold red]❌ No .exe asset found in release.[/bold red]")
             raise typer.Exit(code=1)
-
-        tmp_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe.tmp")
 
         status.update("[bold green]Backing up old binary...[/bold green]")
         if keep_backup:
             create_backup(app_name, current_version)
 
         status.update("[bold green]Downloading new binary...[/bold green]")
+        installed_exes = []
         try:
             status.stop()
-            sha256 = hashlib.sha256()
-            with requests.get(exe_url, stream=True) as r:
-                r.raise_for_status()
-                total = int(r.headers.get('Content-Length', 0))
-                with open(tmp_path, 'wb') as f, Progress(
-                    SpinnerColumn(),
-                    TextColumn("{task.description}"),
-                    BarColumn(),
-                    DownloadColumn(),
-                    TimeRemainingColumn(),
-                    transient=True,
-                ) as progress:
-                    task = progress.add_task("[cyan]Downloading...", total=total)
-                    for chunk in r.iter_content(chunk_size=8192):
-                        if chunk:
-                            sha256.update(chunk)
-                            f.write(chunk)
-                            progress.update(task, advance=len(chunk))
+            for exe_asset in exe_assets:
+                exe_url = exe_asset['url']
+                checksum = exe_asset['checksum']
+                exe_filename = exe_asset['filename']
+                if not installed_exes:
+                    dest_name = f"{app_name}.exe"
+                else:
+                    dest_name = exe_filename
+                dest_path = os.path.join(CMAM_SCRIPTS, dest_name)
+                tmp_path = dest_path + ".tmp"
 
-            if checksum:
-                if f"sha256:{sha256.hexdigest()}" != checksum:
-                    console.print("[bold red]❌ Checksum mismatch. Aborting update.[/bold red]")
-                    os.remove(tmp_path)
-                    raise typer.Exit(code=1)
-            else:
-                console.print("[bold yellow]⚠ No checksum provided. Skipping verification.[/bold yellow]")
+                sha256 = hashlib.sha256()
+                with requests.get(exe_url, stream=True) as r:
+                    r.raise_for_status()
+                    total = int(r.headers.get('Content-Length', 0))
+                    with open(tmp_path, 'wb') as f, Progress(
+                        SpinnerColumn(),
+                        TextColumn("{task.description}"),
+                        BarColumn(),
+                        DownloadColumn(),
+                        TimeRemainingColumn(),
+                        transient=True,
+                    ) as progress:
+                        task = progress.add_task(f"[cyan]Downloading {dest_name}...[/cyan]", total=total)
+                        for chunk in r.iter_content(chunk_size=8192):
+                            if chunk:
+                                sha256.update(chunk)
+                                f.write(chunk)
+                                progress.update(task, advance=len(chunk))
 
-            os.replace(tmp_path, exe_path)
+                if checksum:
+                    if f"sha256:{sha256.hexdigest()}" != checksum:
+                        console.print(f"[bold red]❌ Checksum mismatch for {dest_name}. Aborting update.[/bold red]")
+                        os.remove(tmp_path)
+                        raise typer.Exit(code=1)
+                elif not installed_exes:
+                    console.print("[bold yellow]⚠ No checksum provided. Skipping verification.[/bold yellow]")
+
+                os.replace(tmp_path, dest_path)
+                installed_exes.append(dest_name)
+
+            # Download dependencies
+            dep_files = download_dependencies(release_data, app_data, CMAM_SCRIPTS)
 
             status.start()
 
@@ -519,7 +599,11 @@ def update(
         add_folder_to_path(CMAM_SCRIPTS)
 
         status.update("[bold green]Saving metadata...[/bold green]")
-        data[app_name] = {"version": new_version}
+        pkg_meta = {"version": new_version}
+        extra_files = dep_files + [e for e in installed_exes[1:] if e not in dep_files]
+        if extra_files:
+            pkg_meta["dependencies"] = extra_files
+        data[app_name] = pkg_meta
         save_local_packages(data)
 
     console.print(Panel(
@@ -628,52 +712,65 @@ def update_all(
                 response.raise_for_status()
                 release_data = response.json()
                 
-                exe_url, checksum = None, None
-                for asset in release_data.get('assets', []):
-                    if asset.get('name', '').lower().endswith('.exe'):
-                        exe_url = asset.get('browser_download_url')
-                        checksum = asset.get("digest")
-                        break
+                exe_assets = get_exe_assets(release_data)
                 
-                if not exe_url:
+                if not exe_assets:
                     raise Exception("No .exe asset found")
                 
                 if keep_backup:
                     status.update("[bold green]Backing up...[/bold green]")
                     create_backup(app_name, current_version)
                 
-                tmp_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe.tmp")
-                
                 status.stop()
-                sha256 = hashlib.sha256()
-                with requests.get(exe_url, stream=True) as r:
-                    r.raise_for_status()
-                    total = int(r.headers.get('Content-Length', 0))
-                    with open(tmp_path, 'wb') as f, Progress(
-                        SpinnerColumn(),
-                        TextColumn(f"{{task.description}} [dim]{app_name}[/dim]"),
-                        BarColumn(),
-                        DownloadColumn(),
-                        TimeRemainingColumn(),
-                        transient=True,
-                    ) as progress:
-                        task = progress.add_task("[cyan]Downloading...", total=total)
-                        for chunk in r.iter_content(chunk_size=8192):
-                            if chunk:
-                                sha256.update(chunk)
-                                f.write(chunk)
-                                progress.update(task, advance=len(chunk))
-                
-                if checksum and f"sha256:{sha256.hexdigest()}" != checksum:
-                    os.remove(tmp_path)
-                    raise Exception("Checksum mismatch")
-                
-                os.replace(tmp_path, exe_path)
+                installed_exes = []
+                for exe_asset in exe_assets:
+                    exe_url = exe_asset['url']
+                    checksum = exe_asset['checksum']
+                    exe_filename = exe_asset['filename']
+                    if not installed_exes:
+                        dest_name = f"{app_name}.exe"
+                    else:
+                        dest_name = exe_filename
+                    dest_path = os.path.join(CMAM_SCRIPTS, dest_name)
+                    tmp_path = dest_path + ".tmp"
+
+                    sha256 = hashlib.sha256()
+                    with requests.get(exe_url, stream=True) as r:
+                        r.raise_for_status()
+                        total = int(r.headers.get('Content-Length', 0))
+                        with open(tmp_path, 'wb') as f, Progress(
+                            SpinnerColumn(),
+                            TextColumn(f"{{task.description}} [dim]{app_name}[/dim]"),
+                            BarColumn(),
+                            DownloadColumn(),
+                            TimeRemainingColumn(),
+                            transient=True,
+                        ) as progress:
+                            task = progress.add_task(f"[cyan]Downloading {dest_name}...[/cyan]", total=total)
+                            for chunk in r.iter_content(chunk_size=8192):
+                                if chunk:
+                                    sha256.update(chunk)
+                                    f.write(chunk)
+                                    progress.update(task, advance=len(chunk))
+                    
+                    if checksum and f"sha256:{sha256.hexdigest()}" != checksum:
+                        os.remove(tmp_path)
+                        raise Exception(f"Checksum mismatch for {dest_name}")
+                    
+                    os.replace(tmp_path, dest_path)
+                    installed_exes.append(dest_name)
+
+                # Download dependencies
+                dep_files = download_dependencies(release_data, manifest[app_name], CMAM_SCRIPTS)
+
                 status.start()
                 
                 status.update("[bold green]Saving metadata...[/bold green]")
                 data = load_local_packages()
                 data[app_name]["version"] = new_version
+                extra_files = dep_files + [e for e in installed_exes[1:] if e not in dep_files]
+                if extra_files:
+                    data[app_name]["dependencies"] = extra_files
                 save_local_packages(data)
             
             console.print(f"  [green]✓[/green] {app_name} updated to v{new_version}\n")
@@ -723,6 +820,30 @@ def uninstall(
         except Exception as e:
             console.print(f"[bold red]❌ Failed to remove executable: {e}[/bold red]")
             raise typer.Exit(code=1)
+        
+        # Remove dependency files (only if not used by another installed app)
+        status.update("[bold green]Removing dependencies...[/bold green]")
+        data = load_local_packages()
+        dep_files = data.get(app_name, {}).get("dependencies", [])
+
+        # Collect dependencies used by OTHER installed apps
+        other_deps = set()
+        for other_app, other_info in data.items():
+            if other_app != app_name:
+                for d in other_info.get("dependencies", []):
+                    other_deps.add(d)
+
+        for dep_name in dep_files:
+            if dep_name in other_deps:
+                console.print(f"   [dim]⏭  Keeping shared dependency: {dep_name}[/dim]")
+                continue
+            dep_path = os.path.join(CMAM_SCRIPTS, dep_name)
+            if os.path.exists(dep_path):
+                try:
+                    os.remove(dep_path)
+                    console.print(f"   [green]✓[/green] Removed dependency: {dep_name}")
+                except Exception:
+                    console.print(f"   [yellow]⚠[/yellow] Could not remove dependency: {dep_name}")
         
         # Remove backups if not keeping them
         if not keep_backups:
@@ -884,7 +1005,8 @@ def self_update():
         console.print(f"[bold yellow]📦 New version available: v{latest_version} (current: v{CMAM_VERSION})[/bold yellow]")
         
         # Find exe asset
-        asset = get_exe_asset(release_info)
+        assets = get_exe_assets(release_info)
+        asset = assets[0] if assets else None
         if not asset:
             console.print("[bold red]❌ No CMAM executable found in release.[/bold red]")
             raise typer.Exit(code=1)
@@ -1197,7 +1319,8 @@ def validate():
             unknown_count += 1
             continue
         
-        asset = get_exe_asset(release_info)
+        assets = get_exe_assets(release_info)
+        asset = assets[0] if assets else None
         if not asset or not asset.get('checksum'):
             table.add_row(app_name, f"v{version}", "[yellow]⚠ No checksum available[/yellow]")
             unknown_count += 1
@@ -1250,7 +1373,8 @@ def verify(
             console.print(f"[bold yellow]⚠ Cannot fetch release info for v{version}.[/bold yellow]")
             raise typer.Exit(code=1)
         
-        asset = get_exe_asset(release_info)
+        assets = get_exe_assets(release_info)
+        asset = assets[0] if assets else None
         local_checksum = calculate_file_checksum(exe_path)
     
     console.print(f"[bold]Local checksum:[/bold] {local_checksum}")
@@ -1336,15 +1460,26 @@ def clean(
         console.print("[bold]Checking for orphaned apps...[/bold]")
         data = load_local_packages()
         
+        # Collect all known dependency file names
+        known_dep_files = set()
+        for pkg_info in data.values():
+            for dep in pkg_info.get("dependencies", []):
+                known_dep_files.add(dep)
+
         if os.path.exists(CMAM_SCRIPTS):
             for filename in os.listdir(CMAM_SCRIPTS):
+                filepath = os.path.join(CMAM_SCRIPTS, filename)
+                if not os.path.isfile(filepath):
+                    continue
+                # Skip known dependency files
+                if filename in known_dep_files:
+                    continue
                 if filename.endswith('.exe'):
                     app_name = filename[:-4]  # Remove .exe
                     if app_name not in data and app_name != "cmam":
-                        exe_path = os.path.join(CMAM_SCRIPTS, filename)
                         try:
-                            cleaned_size += os.path.getsize(exe_path)
-                            os.remove(exe_path)
+                            cleaned_size += os.path.getsize(filepath)
+                            os.remove(filepath)
                             cleaned_files += 1
                             console.print(f"  [green]✓[/green] Removed orphaned app: {app_name}")
                         except Exception as e:
@@ -1534,7 +1669,8 @@ def trust():
             table.add_row(app_name, f"v{version}", short_checksum, "[yellow]⚠ Cannot verify[/yellow]")
             continue
         
-        asset = get_exe_asset(release_info)
+        assets = get_exe_assets(release_info)
+        asset = assets[0] if assets else None
         
         if not asset or not asset.get('checksum'):
             table.add_row(app_name, f"v{version}", short_checksum, "[yellow]⚠ No signature[/yellow]")

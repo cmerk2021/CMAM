@@ -1,12 +1,17 @@
 {
     "pyrdstextgenerator": {
         "link": "cmerk2021/PyRDSTextGenerator",
-        "dependencies": "",
+        "dependencies": [""],
         "description": "Text generator for Connor Merk Radio RDS."
     },
     "lunar": {
         "link": "cmerk2021/lunar-terminal",
-        "dependencies": "",
+        "dependencies": [""],
         "description": "Powerful Lua REPL for Windows"
+    },
+    "minirds": {
+        "link": "cmerk2021/MiniRDS",
+        "dependencies": ["libao-4.dll", "libgcc_s_seh-1.dll", "libsamplerate-0.dll", "libstdc++-6.dll", "libwinpthread-1.dll"],
+        "description": "A minimal RDS encoder for Windows."
     }
 }
