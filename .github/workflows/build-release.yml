@@ -3,11 +3,40 @@ name: Build and Release
 on:
   push:
     branches:
-      - main  # Change this to your target branch
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest  # Linting doesn't need Windows, so use the faster/cheaper runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install linting tools
+        run: pip install ruff
+
+      - name: Lint with Ruff
+        run: ruff check src/
+
+      - name: Check formatting with Ruff
+        run: ruff format --check src/
+
   build-and-release:
-    runs-on: windows-latest  # Required for building .exe files
+    name: Build and Release
+    needs: lint  # Only run if linting passes
+    # Skip the release on PRs — only build+release on pushes to main
+    if: github.event_name == 'push'
+    runs-on: windows-latest
     permissions:
       contents: write
 
@@ -19,17 +48,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+          cache: 'pip'  # Cache pip dependencies between runs
 
       - name: Install dependencies
         run: |
           pip install pyinstaller
-          # If you have a requirements.txt, uncomment the line below:
           pip install -r requirements.txt
-
-      - name: Build executables
-        run: |
-          pyinstaller --onefile --distpath dist src/cmam.py
-          pyinstaller --onefile --distpath dist src/install.py
 
       - name: Extract version from cmam.py
         id: get_version
@@ -38,9 +62,32 @@ jobs:
           import re, os
           content = open('src/cmam.py', encoding='utf-8').read()
           match = re.search(r"CMAM_VERSION\s*=\s*[\"'](.*?)[\"']", content)
+          if not match:
+              raise ValueError("Could not find CMAM_VERSION in src/cmam.py")
           version = match.group(1)
+          print(f"Found version: {version}")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f'VERSION={version}\n')
+
+      - name: Check version tag doesn't already exist
+        shell: bash
+        run: |
+          git fetch --tags
+          if git rev-parse "v${{ steps.get_version.outputs.VERSION }}" >/dev/null 2>&1; then
+            echo "Tag v${{ steps.get_version.outputs.VERSION }} already exists. Skipping release."
+            exit 1
+          fi
+
+      - name: Build executables
+        run: |
+          pyinstaller --onefile --distpath dist --clean src/cmam.py
+          pyinstaller --onefile --distpath dist --clean src/install.py
+
+      - name: Verify build artifacts exist
+        shell: bash
+        run: |
+          test -f dist/cmam.exe    || (echo "cmam.exe not found!"    && exit 1)
+          test -f dist/install.exe || (echo "install.exe not found!" && exit 1)
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
