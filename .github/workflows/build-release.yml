@@ -1,0 +1,48 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main  # Change this to your target branch
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest  # Required for building .exe files
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller
+          # If you have a requirements.txt, uncomment the line below:
+          pip install -r requirements.txt
+
+      - name: Build executables
+        run: |
+          pyinstaller --onefile --distpath dist src/cmam.py
+          pyinstaller --onefile --distpath dist src/install.py
+
+      - name: Extract version from cmam.py
+        id: get_version
+        run: |
+          $version = python -c "import re; content = open('src/cmam.py').read(); match = re.search(r'CMAM_VERSION\s*=\s*[\"\'](.*?)[\"\']', content); print(match.group(1))"
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: CMAM v${{ steps.get_version.outputs.VERSION }}
+          files: |
+            dist/cmam.exe
+            dist/install.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
