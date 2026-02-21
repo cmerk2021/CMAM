@@ -50,7 +50,7 @@ def is_admin() -> bool:
     """Check if the script is running with admin privileges."""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
+    except Exception:
         return False
 
 def ensure_directories():
@@ -64,7 +64,7 @@ def ensure_directories():
 def add_to_path(folder_path: str) -> bool:
     """Add folder to user PATH if not already present."""
     folder_path = os.path.abspath(folder_path)
-    console.print(f"[bold cyan]🔧 Configuring PATH...[/bold cyan]")
+    console.print("[bold cyan]🔧 Configuring PATH...[/bold cyan]")
 
     try:
         key = winreg.OpenKey(
@@ -84,7 +84,7 @@ def add_to_path(folder_path: str) -> bool:
         normalized_paths = [os.path.normpath(p).lower() for p in paths]
 
         if folder_path.lower() in normalized_paths:
-            console.print(f"   [green]✓[/green] Already in PATH")
+            console.print("   [green]✓[/green] Already in PATH")
             winreg.CloseKey(key)
             return True
 
@@ -100,11 +100,11 @@ def add_to_path(folder_path: str) -> bool:
             HWND_BROADCAST, WM_SETTINGCHANGE, 0, "Environment", SMTO_ABORTIFHUNG, 5000, None
         )
 
-        console.print(f"   [green]✓[/green] Added to PATH")
+        console.print("   [green]✓[/green] Added to PATH")
         return True
 
     except PermissionError:
-        console.print(f"   [red]✗[/red] Permission denied. Try running as administrator.")
+        console.print("   [red]✗[/red] Permission denied. Try running as administrator.")
         return False
     except Exception as e:
         console.print(f"   [red]✗[/red] Error modifying PATH: {e}")

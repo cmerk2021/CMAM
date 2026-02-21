@@ -31,7 +31,7 @@ from typing import Optional, List
 # ║  CONSTANTS & GLOBALS                                                       ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
-CMAM_VERSION = "2.4.0"
+CMAM_VERSION = "2.4.1"
 CMAM_ROOT = r"C:\.cmam"
 CMAM_CACHE = os.path.join(CMAM_ROOT, ".cache")
 CMAM_SCRIPTS = os.path.join(CMAM_ROOT, "scripts")
@@ -168,7 +168,7 @@ def fetch_release_info(repo: str, version: str = None):
         response = requests.get(api_url)
         response.raise_for_status()
         return response.json()
-    except HTTPError as e:
+    except HTTPError:
         if response.status_code == 404:
             return None
         raise
@@ -718,8 +718,6 @@ def update_all(
         console.print(f"[bold]Updating {app_name}...[/bold]")
         
         try:
-            # Perform the update using existing update logic
-            exe_path = os.path.join(CMAM_SCRIPTS, f"{app_name}.exe")
             current_version = update_info['current']
             new_version = update_info['latest']
             
@@ -1214,7 +1212,7 @@ def self_repair():
         console.print(f"   [green]✓[/green] Removed {cleaned_temp} stale temp file(s)")
 
     console.print(Panel(
-        f"[bold green]✅ CMAM has been repaired successfully![/bold green]\n\n"
+        "[bold green]✅ CMAM has been repaired successfully![/bold green]\n\n"
         "[white]Your installed applications were not modified.[/white]\n"
         "[dim]You may need to restart your terminal for changes to take effect.[/dim]",
         title="[bold blue]CMAM[/bold blue]",
@@ -1595,7 +1593,7 @@ def clean(
                         shutil.rmtree(item_path)
                 except Exception as e:
                     console.print(f"[yellow]⚠ Could not remove {item}: {e}[/yellow]")
-        console.print(f"  [green]✓[/green] Cache cleaned")
+        console.print("  [green]✓[/green] Cache cleaned")
     
     # Clean backups with warning
     if backups:
@@ -1611,7 +1609,7 @@ def clean(
                         cleaned_files += 1
                     except Exception:
                         pass
-                console.print(f"  [green]✓[/green] Backups cleaned")
+                console.print("  [green]✓[/green] Backups cleaned")
     
     # Clean orphaned apps
     if orphans:
@@ -1689,9 +1687,9 @@ def doctor():
     # Check 3: PATH configured
     console.print("\n[bold]Checking PATH configuration...[/bold]")
     if is_in_path(CMAM_SCRIPTS):
-        console.print(f"  [green]✓[/green] Scripts folder is in PATH")
+        console.print("  [green]✓[/green] Scripts folder is in PATH")
     else:
-        console.print(f"  [yellow]⚠[/yellow] Scripts folder is NOT in PATH")
+        console.print("  [yellow]⚠[/yellow] Scripts folder is NOT in PATH")
         warnings.append("Scripts folder not in PATH")
     
     # Check 4: All registered apps have executables
@@ -1719,14 +1717,14 @@ def doctor():
                     orphans.append(app_name)
                     warnings.append(f"Orphaned executable: {filename}")
     if not orphans:
-        console.print(f"  [green]✓[/green] No orphaned executables")
+        console.print("  [green]✓[/green] No orphaned executables")
     
     # Check 6: Network connectivity
     console.print("\n[bold]Checking network connectivity...[/bold]")
     try:
         response = requests.get("https://api.github.com", timeout=5)
         if response.status_code == 200:
-            console.print(f"  [green]✓[/green] GitHub API is reachable")
+            console.print("  [green]✓[/green] GitHub API is reachable")
         else:
             console.print(f"  [yellow]⚠[/yellow] GitHub API returned status {response.status_code}")
             warnings.append("GitHub API returned non-200 status")
@@ -1740,7 +1738,7 @@ def doctor():
         manifest = fetch_manifest()
         console.print(f"  [green]✓[/green] Remote manifest accessible ({len(manifest)} apps available)")
     except SystemExit:
-        console.print(f"  [red]✗[/red] Cannot fetch remote manifest")
+        console.print("  [red]✗[/red] Cannot fetch remote manifest")
         issues.append("Cannot fetch remote manifest")
     
     # Check 8: Disk space
@@ -1754,7 +1752,7 @@ def doctor():
             console.print(f"  [yellow]⚠[/yellow] Low disk space: {free_gb:.2f} GB free")
             warnings.append("Low disk space")
     except Exception:
-        console.print(f"  [yellow]⚠[/yellow] Could not check disk space")
+        console.print("  [yellow]⚠[/yellow] Could not check disk space")
     
     # Summary
     console.print("")
