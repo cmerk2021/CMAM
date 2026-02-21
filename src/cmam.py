@@ -31,7 +31,7 @@ from typing import Optional, List
 # ║  CONSTANTS & GLOBALS                                                       ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
-CMAM_VERSION = "2.3.0"
+CMAM_VERSION = "2.4.0"
 CMAM_ROOT = r"C:\.cmam"
 CMAM_CACHE = os.path.join(CMAM_ROOT, ".cache")
 CMAM_SCRIPTS = os.path.join(CMAM_ROOT, "scripts")
@@ -300,6 +300,24 @@ def get_backups(app_name: str) -> List[dict]:
                 })
     backups.sort(key=lambda x: parse_version(x['version']), reverse=True)
     return backups
+
+def find_parent_package(query: str) -> Optional[str]:
+    """Find which installed package owns a given file in the scripts folder.
+
+    Checks if `query` (with or without .exe) matches a dependency or secondary
+    executable tracked by any installed package.  Returns the parent package
+    name, or None if no match is found.
+    """
+    data = load_local_packages()
+    query_lower = query.lower()
+    candidates = [query_lower, f"{query_lower}.exe"]
+
+    for app_name, meta in data.items():
+        dep_files = meta.get("dependencies", [])
+        for dep in dep_files:
+            if dep.lower() in candidates:
+                return app_name
+    return None
 
 def add_folder_to_path(folder_path: str) -> bool:
     """Add a folder to the user's PATH if not already present."""
@@ -884,12 +902,15 @@ def list_apps():
     table.add_column("App Name", style="cyan", no_wrap=True)
     table.add_column("Version", style="green")
     table.add_column("Backups", style="yellow")
+    table.add_column("Components", style="dim")
     
     for app_name, info in sorted(data.items()):
         version = info.get("version", "unknown")
         backups = get_backups(app_name)
         backup_count = str(len(backups)) if backups else "0"
-        table.add_row(app_name, f"v{version}", backup_count)
+        dep_files = info.get("dependencies", [])
+        components = ", ".join(dep_files) if dep_files else "-"
+        table.add_row(app_name, f"v{version}", backup_count, components)
     
     console.print(table)
     console.print(f"\n[dim]Total: {len(data)} app(s) installed[/dim]")
@@ -905,9 +926,20 @@ def info(
         manifest = fetch_manifest()
         local_packages = load_local_packages()
     
+    # If app is not in the manifest, check whether it is a component of an
+    # installed package (e.g. a secondary exe or dependency file).
+    parent_package: Optional[str] = None
     if app_name not in manifest:
-        console.print(f"[bold red]❌ App [blue]{app_name}[/blue] not found in manifest.[/bold red]")
-        raise typer.Exit(code=1)
+        parent_package = find_parent_package(app_name)
+        if parent_package is None:
+            console.print(f"[bold red]❌ App [blue]{app_name}[/blue] not found in manifest.[/bold red]")
+            raise typer.Exit(code=1)
+        # Inform the user and redirect to the parent package
+        console.print(
+            f"[bold yellow]ℹ  [blue]{app_name}[/blue] is a component installed by "
+            f"[green]{parent_package}[/green].[/bold yellow]\n"
+        )
+        app_name = parent_package
     
     app_data = manifest[app_name]
     is_installed = app_name in local_packages
@@ -940,6 +972,11 @@ def info(
             if len(backups) > 5:
                 backup_versions += f" (+{len(backups) - 5} more)"
             info_lines.append(f"[bold]Backups:[/bold] {backup_versions}")
+
+        # Show components (secondary exes & dependency files)
+        dep_files = local_packages.get(app_name, {}).get("dependencies", [])
+        if dep_files:
+            info_lines.append(f"[bold]Components:[/bold] {', '.join(dep_files)}")
     else:
         info_lines.append("[dim]Status: Not installed[/dim]")
     
