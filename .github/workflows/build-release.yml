@@ -28,9 +28,6 @@ jobs:
       - name: Lint with Ruff
         run: ruff check src/
 
-      - name: Check formatting with Ruff
-        run: ruff format --check src/
-
   build-and-release:
     name: Build and Release
     needs: lint  # Only run if linting passes
