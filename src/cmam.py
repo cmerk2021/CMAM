@@ -16,6 +16,7 @@ import hashlib
 import shutil
 import ctypes
 import winreg
+import subprocess
 import requests
 from requests.exceptions import HTTPError
 import typer
@@ -30,7 +31,7 @@ from typing import Optional, List
 # ║  CONSTANTS & GLOBALS                                                       ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
-CMAM_VERSION = "2.2.0"
+CMAM_VERSION = "2.3.0"
 CMAM_ROOT = r"C:\.cmam"
 CMAM_CACHE = os.path.join(CMAM_ROOT, ".cache")
 CMAM_SCRIPTS = os.path.join(CMAM_ROOT, "scripts")
@@ -1062,6 +1063,126 @@ del "%~f0"
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
             raise typer.Exit(code=1)
+
+@app.command("self-repair")
+def self_repair():
+    """Repairs the CMAM installation by fetching the latest installer and force-reinstalling CMAM.
+    
+    This does NOT affect any installed applications — only CMAM itself is reinstalled.
+    Old CMAM cache and backup files are cleaned up afterward.
+    """
+    print_banner()
+    console.print("[bold cyan]🔧 Repairing CMAM installation...[/bold cyan]")
+
+    with console.status("[bold green]Fetching latest CMAM release...[/bold green]") as status:
+        release_info = fetch_release_info(CMAM_REPO)
+
+        if not release_info:
+            console.print("[bold red]❌ Failed to fetch CMAM release information.[/bold red]")
+            raise typer.Exit(code=1)
+
+        latest_version = release_info.get("tag_name", "").lstrip("v")
+        console.print(f"[dim]Latest CMAM release: v{latest_version}[/dim]")
+
+        # Find install.exe asset
+        install_asset = None
+        for asset in release_info.get("assets", []):
+            if asset.get("name", "").lower() == "install.exe":
+                install_asset = asset
+                break
+
+        if not install_asset:
+            console.print("[bold red]❌ No install.exe found in the latest release.[/bold red]")
+            raise typer.Exit(code=1)
+
+        install_url = install_asset.get("browser_download_url")
+        install_checksum = install_asset.get("digest")
+
+        # Download install.exe to cache
+        ensure_dirs()
+        installer_path = os.path.join(CMAM_CACHE, "install.exe")
+        status.update("[bold green]Downloading installer...[/bold green]")
+        status.stop()
+
+        try:
+            checksum = download_file_with_progress(install_url, installer_path)
+
+            if install_checksum and checksum != install_checksum:
+                console.print("[bold red]❌ Installer checksum mismatch. Aborting.[/bold red]")
+                os.remove(installer_path)
+                raise typer.Exit(code=1)
+        except Exception as e:
+            console.print(f"[bold red]❌ Failed to download installer: {e}[/bold red]")
+            if os.path.exists(installer_path):
+                os.remove(installer_path)
+            raise typer.Exit(code=1)
+
+    console.print("[bold cyan]🔄 Running installer with force reinstall...[/bold cyan]")
+
+    # Run the installer with -f to force reinstall CMAM
+    try:
+        result = subprocess.run(
+            [installer_path, "-f"],
+            timeout=120,
+        )
+        if result.returncode != 0:
+            console.print(f"[bold red]❌ Installer exited with code {result.returncode}.[/bold red]")
+            raise typer.Exit(code=1)
+    except subprocess.TimeoutExpired:
+        console.print("[bold red]❌ Installer timed out.[/bold red]")
+        raise typer.Exit(code=1)
+    except OSError as e:
+        console.print(f"[bold red]❌ Failed to run installer: {e}[/bold red]")
+        raise typer.Exit(code=1)
+
+    # Clean up old CMAM artifacts (cache & backups), but NOT installed apps
+    console.print("[bold cyan]🧹 Cleaning up old CMAM files...[/bold cyan]")
+
+    # Remove cached installer
+    if os.path.exists(installer_path):
+        try:
+            os.remove(installer_path)
+            console.print("   [green]✓[/green] Removed cached installer")
+        except OSError:
+            console.print("   [yellow]⚠[/yellow] Could not remove cached installer")
+
+    # Remove old CMAM backups (cmam_v*.exe.bak) but keep app backups
+    cleaned_backups = 0
+    if os.path.isdir(CMAM_BACKUPS):
+        for filename in os.listdir(CMAM_BACKUPS):
+            if filename.startswith("cmam_v") and filename.endswith(".exe.bak"):
+                try:
+                    os.remove(os.path.join(CMAM_BACKUPS, filename))
+                    cleaned_backups += 1
+                except OSError:
+                    pass
+    if cleaned_backups:
+        console.print(f"   [green]✓[/green] Removed {cleaned_backups} old CMAM backup(s)")
+
+    # Remove stale CMAM temp files (.tmp) and update batch scripts
+    cleaned_temp = 0
+    for folder in [CMAM_SCRIPTS, CMAM_CACHE]:
+        if os.path.isdir(folder):
+            for filename in os.listdir(folder):
+                filepath = os.path.join(folder, filename)
+                is_cmam_tmp = filename.startswith("cmam") and filename.endswith(".tmp")
+                is_update_bat = filename == "update_cmam.bat"
+                if is_cmam_tmp or is_update_bat:
+                    try:
+                        os.remove(filepath)
+                        cleaned_temp += 1
+                    except OSError:
+                        pass
+    if cleaned_temp:
+        console.print(f"   [green]✓[/green] Removed {cleaned_temp} stale temp file(s)")
+
+    console.print(Panel(
+        f"[bold green]✅ CMAM has been repaired successfully![/bold green]\n\n"
+        "[white]Your installed applications were not modified.[/white]\n"
+        "[dim]You may need to restart your terminal for changes to take effect.[/dim]",
+        title="[bold blue]CMAM[/bold blue]",
+        border_style="green"
+    ))
 
 @app.command()
 def repair(
