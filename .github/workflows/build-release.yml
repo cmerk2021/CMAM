@@ -32,12 +32,13 @@ jobs:
       - name: Extract version from cmam.py
         id: get_version
         run: |
-          $version = python -c "
+          $script = @"
           import re
           content = open('src/cmam.py').read()
-          match = re.search(r'CMAM_VERSION\s*=\s*[\"\'](.*?)[\"\']', content)
+          match = re.search(r'CMAM_VERSION\s*=\s*[\"\'](.*?)[\"\']\s*', content)
           print(match.group(1))
-          "
+          "@
+          $version = $script | python
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
