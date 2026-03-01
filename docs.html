@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CMAM Docs — Connor Merk App Manager</title>
+  <style>
+    /* ===== CSS CUSTOM PROPERTIES ===== */
+    :root {
+      --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+      --nav-h: 60px;
+      --sidebar-w: 260px;
+      --toc-w: 220px;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --glass-blur: 18px;
+      --transition: .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ---------- LIGHT THEME ---------- */
+    :root, [data-theme="light"] {
+      --bg: #f0f2f5;
+      --bg-nav: rgba(255,255,255,.72);
+      --bg-sidebar: rgba(255,255,255,.55);
+      --bg-card: rgba(255,255,255,.62);
+      --bg-code: rgba(30,35,50,.06);
+      --bg-code-block: #1e2333;
+      --bg-callout-info: rgba(56,139,253,.09);
+      --bg-callout-warn: rgba(227,179,65,.10);
+      --bg-callout-danger: rgba(229,72,77,.09);
+      --bg-callout-tip: rgba(63,185,80,.09);
+      --bg-table-head: rgba(0,0,0,.04);
+      --bg-table-stripe: rgba(0,0,0,.025);
+      --border: rgba(0,0,0,.09);
+      --text: #1e2333;
+      --text-secondary: #555e70;
+      --text-muted: #8790a2;
+      --text-code-block: #e2e8f0;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent-glow: rgba(99,102,241,.25);
+      --link: #6366f1;
+      --scrollbar-track: rgba(0,0,0,.04);
+      --scrollbar-thumb: rgba(0,0,0,.15);
+      --orb1: rgba(99,102,241,.18);
+      --orb2: rgba(236,72,153,.14);
+      --orb3: rgba(16,185,129,.12);
+      --shadow: 0 4px 24px rgba(0,0,0,.06);
+      --tab-active-bg: var(--accent);
+      --tab-active-text: #fff;
+      --tab-bg: rgba(0,0,0,.04);
+      --tab-text: var(--text-secondary);
+      --badge-bg: rgba(99,102,241,.12);
+      --badge-text: #6366f1;
+      --kbd-bg: rgba(0,0,0,.06);
+      --kbd-border: rgba(0,0,0,.14);
+      --hr-color: rgba(0,0,0,.08);
+    }
+
+    /* ---------- DARK THEME ---------- */
+    [data-theme="dark"] {
+      --bg: #0d1017;
+      --bg-nav: rgba(18,22,33,.78);
+      --bg-sidebar: rgba(18,22,33,.60);
+      --bg-card: rgba(25,30,46,.60);
+      --bg-code: rgba(255,255,255,.07);
+      --bg-code-block: #141822;
+      --bg-callout-info: rgba(56,139,253,.10);
+      --bg-callout-warn: rgba(227,179,65,.10);
+      --bg-callout-danger: rgba(229,72,77,.10);
+      --bg-callout-tip: rgba(63,185,80,.10);
+      --bg-table-head: rgba(255,255,255,.04);
+      --bg-table-stripe: rgba(255,255,255,.02);
+      --border: rgba(255,255,255,.08);
+      --text: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --text-code-block: #e2e8f0;
+      --accent: #818cf8;
+      --accent2: #a78bfa;
+      --accent-glow: rgba(129,140,248,.22);
+      --link: #818cf8;
+      --scrollbar-track: rgba(255,255,255,.03);
+      --scrollbar-thumb: rgba(255,255,255,.12);
+      --orb1: rgba(99,102,241,.14);
+      --orb2: rgba(236,72,153,.10);
+      --orb3: rgba(16,185,129,.08);
+      --shadow: 0 4px 32px rgba(0,0,0,.30);
+      --tab-active-bg: var(--accent);
+      --tab-active-text: #fff;
+      --tab-bg: rgba(255,255,255,.05);
+      --tab-text: var(--text-secondary);
+      --badge-bg: rgba(129,140,248,.15);
+      --badge-text: #818cf8;
+      --kbd-bg: rgba(255,255,255,.07);
+      --kbd-border: rgba(255,255,255,.14);
+      --hr-color: rgba(255,255,255,.07);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      [data-theme="auto"] {
+        --bg: #0d1017;
+        --bg-nav: rgba(18,22,33,.78);
+        --bg-sidebar: rgba(18,22,33,.60);
+        --bg-card: rgba(25,30,46,.60);
+        --bg-code: rgba(255,255,255,.07);
+        --bg-code-block: #141822;
+        --bg-callout-info: rgba(56,139,253,.10);
+        --bg-callout-warn: rgba(227,179,65,.10);
+        --bg-callout-danger: rgba(229,72,77,.10);
+        --bg-callout-tip: rgba(63,185,80,.10);
+        --bg-table-head: rgba(255,255,255,.04);
+        --bg-table-stripe: rgba(255,255,255,.02);
+        --border: rgba(255,255,255,.08);
+        --text: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --text-code-block: #e2e8f0;
+        --accent: #818cf8;
+        --accent2: #a78bfa;
+        --accent-glow: rgba(129,140,248,.22);
+        --link: #818cf8;
+        --scrollbar-track: rgba(255,255,255,.03);
+        --scrollbar-thumb: rgba(255,255,255,.12);
+        --orb1: rgba(99,102,241,.14);
+        --orb2: rgba(236,72,153,.10);
+        --orb3: rgba(16,185,129,.08);
+        --shadow: 0 4px 32px rgba(0,0,0,.30);
+        --tab-active-bg: var(--accent);
+        --tab-active-text: #fff;
+        --tab-bg: rgba(255,255,255,.05);
+        --tab-text: var(--text-secondary);
+        --badge-bg: rgba(129,140,248,.15);
+        --badge-text: #818cf8;
+        --kbd-bg: rgba(255,255,255,.07);
+        --kbd-border: rgba(255,255,255,.14);
+        --hr-color: rgba(255,255,255,.07);
+      }
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 24px); }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
+
+    /* ===== FLOATING GRADIENT ORBS ===== */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      will-change: transform;
+    }
+    .orb-1 {
+      width: 520px; height: 520px;
+      background: radial-gradient(circle, var(--orb1), transparent 70%);
+      top: -80px; left: -120px;
+      animation: float1 22s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 440px; height: 440px;
+      background: radial-gradient(circle, var(--orb2), transparent 70%);
+      top: 50%; right: -100px;
+      animation: float2 26s ease-in-out infinite;
+    }
+    .orb-3 {
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, var(--orb3), transparent 70%);
+      bottom: -60px; left: 40%;
+      animation: float3 20s ease-in-out infinite;
+    }
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(60px, 80px) scale(1.08); }
+      66% { transform: translate(-40px, 40px) scale(.95); }
+    }
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-50px, -60px) scale(1.06); }
+      66% { transform: translate(30px, 50px) scale(.96); }
+    }
+    @keyframes float3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(70px, -50px) scale(1.10); }
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: var(--bg-nav);
+      backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+      transition: background var(--transition);
+    }
+    .navbar-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.15rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .navbar-brand svg { flex-shrink: 0; }
+    .navbar-links { display: flex; align-items: center; gap: 6px; }
+    .navbar-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: .875rem;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      transition: color var(--transition), background var(--transition);
+    }
+    .navbar-links a:hover { color: var(--text); background: var(--bg-code); }
+    .navbar-links a.active-link { color: var(--accent); font-weight: 600; }
+    .navbar-right { display: flex; align-items: center; gap: 8px; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-size: .85rem; color: var(--text-muted);
+      cursor: pointer;
+      transition: border var(--transition), box-shadow var(--transition);
+    }
+    .search-box:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .search-box kbd {
+      font-family: var(--font-sans);
+      font-size: .7rem;
+      padding: 2px 6px;
+      background: var(--kbd-bg);
+      border: 1px solid var(--kbd-border);
+      border-radius: 4px;
+    }
+
+    .theme-toggle {
+      width: 38px; height: 38px;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .icon-moon, .icon-sun { display: none; }
+
+    [data-theme="light"] .icon-moon { display: block; }
+    [data-theme="light"] .icon-sun { display: none; }
+    [data-theme="dark"] .icon-moon { display: none; }
+    [data-theme="dark"] .icon-sun { display: block; }
+    @media (prefers-color-scheme: light) {
+      [data-theme="auto"] .icon-moon { display: block; }
+      [data-theme="auto"] .icon-sun { display: none; }
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="auto"] .icon-moon { display: none; }
+      [data-theme="auto"] .icon-sun { display: block; }
+    }
+
+    .hamburger {
+      display: none;
+      width: 38px; height: 38px;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+    .hamburger svg { width: 20px; height: 20px; }
+
+    /* ===== LAYOUT ===== */
+    .layout {
+      display: flex;
+      margin-top: var(--nav-h);
+      min-height: calc(100vh - var(--nav-h));
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      position: fixed;
+      top: var(--nav-h); bottom: 0; left: 0;
+      width: var(--sidebar-w);
+      padding: 20px 16px 40px;
+      overflow-y: auto;
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+      border-right: 1px solid var(--border);
+      z-index: 100;
+      transition: transform var(--transition), background var(--transition);
+    }
+    .sidebar-group { margin-bottom: 22px; }
+    .sidebar-heading {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      padding: 0 12px;
+      margin-bottom: 6px;
+    }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav li a {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px;
+      font-size: .855rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition);
+    }
+    .sidebar-nav li a:hover { color: var(--text); background: var(--bg-code); }
+    .sidebar-nav li a.active {
+      color: var(--accent);
+      background: var(--accent-glow);
+      font-weight: 600;
+    }
+    .sidebar-nav li a .nav-icon {
+      width: 18px; height: 18px; flex-shrink: 0;
+      opacity: .6;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 99;
+    }
+
+    /* Version badge in sidebar */
+    .sidebar-version {
+      display: inline-flex; align-items: center;
+      padding: 2px 9px;
+      font-size: .7rem;
+      font-weight: 600;
+      border-radius: 100px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      margin-left: 6px;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      margin-right: var(--toc-w);
+      padding: 40px 48px 80px;
+      max-width: 860px;
+      min-width: 0;
+    }
+
+    /* ===== ON THIS PAGE (TOC) ===== */
+    .toc {
+      position: fixed;
+      top: var(--nav-h); bottom: 0; right: 0;
+      width: var(--toc-w);
+      padding: 28px 16px 40px;
+      overflow-y: auto;
+      border-left: 1px solid var(--border);
+      z-index: 100;
+    }
+    .toc-title {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .toc-list { list-style: none; }
+    .toc-list li { position: relative; }
+    .toc-list li a {
+      display: block;
+      padding: 4px 0 4px 14px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all var(--transition);
+    }
+    .toc-list li a:hover { color: var(--text-secondary); }
+    .toc-list li a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+    .toc-list li.toc-h3 a { padding-left: 28px; font-size: .77rem; }
+
+    /* ===== BREADCRUMB ===== */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .82rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--accent); }
+    .breadcrumb .sep { opacity: .4; }
+
+    /* ===== HEADINGS ===== */
+    .doc h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .doc .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+    .doc h2 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      scroll-margin-top: calc(var(--nav-h) + 24px);
+    }
+    .doc h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 36px;
+      margin-bottom: 12px;
+      scroll-margin-top: calc(var(--nav-h) + 24px);
+    }
+    .doc h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-top: 28px;
+      margin-bottom: 10px;
+      scroll-margin-top: calc(var(--nav-h) + 24px);
+    }
+    .doc h5 {
+      font-size: .95rem;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+    .doc h6 {
+      font-size: .85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--text-muted);
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* ===== PARAGRAPH ===== */
+    .doc p { margin-bottom: 16px; color: var(--text-secondary); }
+    .doc a {
+      color: var(--link);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color var(--transition);
+    }
+    .doc a:hover { color: var(--accent2); }
+
+    /* ===== INLINE CODE ===== */
+    .doc code:not(pre code) {
+      font-family: var(--font-mono);
+      font-size: .855em;
+      padding: 2px 7px;
+      background: var(--bg-code);
+      border-radius: 5px;
+      color: var(--accent);
+      word-break: break-word;
+    }
+
+    /* ===== CODE BLOCK ===== */
+    .code-block {
+      position: relative;
+      margin: 20px 0 24px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-code-block);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .code-block-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px;
+      background: rgba(255,255,255,.04);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .code-block-lang {
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--accent);
+    }
+    .code-copy-btn {
+      background: none; border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex; align-items: center; gap: 4px;
+      font-size: .72rem;
+      transition: all var(--transition);
+    }
+    .code-copy-btn:hover { color: #e2e8f0; background: rgba(255,255,255,.08); }
+    .code-copy-btn.copied { color: #4ade80; }
+    .code-block pre {
+      margin: 0;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-size: .855rem;
+      line-height: 1.65;
+    }
+    .code-block pre code {
+      font-family: var(--font-mono);
+      color: var(--text-code-block);
+    }
+    .token-keyword { color: #c084fc; }
+    .token-string { color: #86efac; }
+    .token-comment { color: #64748b; font-style: italic; }
+    .token-function { color: #67e8f9; }
+    .token-number { color: #fbbf24; }
+    .token-type { color: #fca5a5; }
+    .token-operator { color: #94a3b8; }
+    .token-property { color: #7dd3fc; }
+
+    /* ===== CALLOUTS / ALERTS ===== */
+    .callout {
+      display: flex; gap: 12px;
+      padding: 14px 18px;
+      margin: 20px 0;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid;
+      backdrop-filter: blur(6px);
+    }
+    .callout-icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px; }
+    .callout-body { flex: 1; min-width: 0; }
+    .callout-title { font-weight: 700; font-size: .875rem; margin-bottom: 4px; }
+    .callout-body p { margin: 0; font-size: .875rem; }
+
+    .callout-info { background: var(--bg-callout-info); border-color: #388bfd; }
+    .callout-info .callout-icon, .callout-info .callout-title { color: #388bfd; }
+    .callout-warning { background: var(--bg-callout-warn); border-color: #e3b341; }
+    .callout-warning .callout-icon, .callout-warning .callout-title { color: #e3b341; }
+    .callout-danger { background: var(--bg-callout-danger); border-color: #e5484d; }
+    .callout-danger .callout-icon, .callout-danger .callout-title { color: #e5484d; }
+    .callout-tip { background: var(--bg-callout-tip); border-color: #3fb950; }
+    .callout-tip .callout-icon, .callout-tip .callout-title { color: #3fb950; }
+
+    /* ===== BLOCKQUOTE ===== */
+    .doc blockquote {
+      margin: 20px 0;
+      padding: 14px 20px;
+      border-left: 3px solid var(--accent);
+      background: var(--bg-card);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      backdrop-filter: blur(8px);
+    }
+    .doc blockquote p { margin: 0; color: var(--text-secondary); font-style: italic; }
+
+    /* ===== LISTS ===== */
+    .doc ul, .doc ol {
+      padding-left: 24px;
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+    }
+    .doc li { margin-bottom: 6px; }
+    .doc li::marker { color: var(--accent); }
+
+    .task-list { list-style: none; padding-left: 4px; }
+    .task-list li { display: flex; align-items: center; gap: 8px; }
+    .task-list input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+    /* ===== TABLE ===== */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 20px 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .doc table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    .doc table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-weight: 600;
+      background: var(--bg-table-head);
+      border-bottom: 1px solid var(--border);
+    }
+    .doc table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .doc table tr:last-child td { border-bottom: none; }
+    .doc table tr:nth-child(even) td { background: var(--bg-table-stripe); }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 10px;
+      font-size: .73rem;
+      font-weight: 600;
+      border-radius: 100px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+    }
+    .badge-green { background: rgba(63,185,80,.14); color: #3fb950; }
+    .badge-yellow { background: rgba(227,179,65,.14); color: #d4a012; }
+    .badge-red { background: rgba(229,72,77,.14); color: #e5484d; }
+    .badge-blue { background: rgba(56,139,253,.14); color: #388bfd; }
+
+    /* ===== TABS ===== */
+    .tabs { margin: 20px 0; }
+    .tab-buttons {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+    .tab-btn {
+      padding: 8px 18px;
+      font-size: .84rem;
+      font-weight: 500;
+      border: none;
+      background: none;
+      color: var(--tab-text);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all var(--transition);
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+    .tab-panel { display: none; padding: 16px 0 0; }
+    .tab-panel.active { display: block; }
+
+    /* ===== ACCORDION / DETAILS ===== */
+    .doc details {
+      margin: 16px 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+    }
+    .doc details summary {
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: .9rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition);
+    }
+    .doc details summary:hover { background: var(--bg-code); }
+    .doc details[open] summary { border-bottom: 1px solid var(--border); }
+    .doc details .details-content { padding: 14px 16px; }
+    .doc details .details-content p { margin: 0; }
+
+    /* ===== IMAGE ===== */
+    .doc-img {
+      margin: 24px 0;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .doc-img img { display: block; width: 100%; height: auto; }
+    .doc-img figcaption {
+      padding: 10px 16px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-align: center;
+      background: var(--bg-card);
+    }
+
+    /* ===== KBD ===== */
+    .doc kbd {
+      font-family: var(--font-sans);
+      font-size: .78em;
+      padding: 2px 7px;
+      background: var(--kbd-bg);
+      border: 1px solid var(--kbd-border);
+      border-radius: 5px;
+      box-shadow: 0 1px 0 var(--kbd-border);
+      white-space: nowrap;
+    }
+
+    /* ===== HORIZONTAL RULE ===== */
+    .doc hr {
+      border: none;
+      height: 1px;
+      background: var(--hr-color);
+      margin: 40px 0;
+    }
+
+    /* ===== STEPS ===== */
+    .steps {
+      position: relative;
+      padding-left: 36px;
+      margin: 20px 0;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      left: 13px; top: 4px; bottom: 4px;
+      width: 2px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+    .step {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .step::before {
+      content: attr(data-step);
+      position: absolute;
+      left: -36px; top: 0;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 700;
+      border-radius: 50%;
+    }
+    .step h4 { margin-top: 0; margin-bottom: 6px; }
+    .step p { font-size: .875rem; }
+
+    /* ===== CARD GRID ===== */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: all var(--transition);
+    }
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow);
+      transform: translateY(-2px);
+    }
+    .card-icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 10px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+    .card h4 { margin: 0 0 6px; font-size: .95rem; }
+    .card p { margin: 0; font-size: .83rem; color: var(--text-muted); }
+
+    /* ===== FOOTER ===== */
+    .doc-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      gap: 16px;
+    }
+    .doc-footer a {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      flex: 1;
+      max-width: 48%;
+      transition: all var(--transition);
+    }
+    .doc-footer a:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .doc-footer .label { font-size: .73rem; color: var(--text-muted); }
+    .doc-footer .title { font-size: .9rem; font-weight: 600; color: var(--accent); }
+    .doc-footer .next { text-align: right; margin-left: auto; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1200px) {
+      .toc { display: none; }
+      .main { margin-right: 0; }
+    }
+    @media (max-width: 860px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.active { display: block; }
+      .main { margin-left: 0; padding: 28px 20px 60px; }
+      .hamburger { display: flex; }
+      .navbar-links { display: none; }
+    }
+
+    /* ===== DIRECTORY TREE ===== */
+    .dir-tree {
+      font-family: var(--font-mono);
+      font-size: .855rem;
+      line-height: 1.8;
+      color: var(--text-code-block);
+      padding: 16px 20px;
+      margin: 0;
+    }
+    .dir-tree .dir { color: #67e8f9; }
+    .dir-tree .file { color: #e2e8f0; }
+    .dir-tree .comment { color: #64748b; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<!-- Floating gradient orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ======================== NAVBAR ======================== -->
+<nav class="navbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <a href="#" class="navbar-brand">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="url(#cmam-logo)"/>
+        <path d="M8 22V10l4 4 4-4 4 4 4-4v12" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs><linearGradient id="cmam-logo" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+      </svg>
+      CMAM <span class="sidebar-version">v2.4.1</span>
+    </a>
+    <div class="navbar-links">
+      <a href="#" class="active-link">Docs</a>
+      <a href="#cli-reference">CLI Reference</a>
+      <a href="https://github.com/cmerk2021/cmam" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="navbar-right">
+    <div class="search-box" id="searchBox">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      Search docs…
+      <kbd>Ctrl K</kbd>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    <a href="https://github.com/cmerk2021/cmam" target="_blank" rel="noopener" class="theme-toggle" aria-label="GitHub" style="text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 00-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.5 11.5 0 016.02 0c2.28-1.55 3.28-1.23 3.28-1.23.66 1.65.25 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.42.36.81 1.1.81 2.22v3.29c0 .32.21.69.82.57A12 12 0 0012 .3"/></svg>
+    </a>
+  </div>
+</nav>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ======================== SIDEBAR ======================== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-group">
+    <div class="sidebar-heading">Getting Started</div>
+    <ul class="sidebar-nav">
+      <li><a href="#introduction" class="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Introduction</a></li>
+      <li><a href="#installation">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Installation</a></li>
+      <li><a href="#directory-structure">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        Directory Structure</a></li>
+    </ul>
+  </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-heading">CLI Reference</div>
+    <ul class="sidebar-nav">
+      <li><a href="#cmd-install">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        install</a></li>
+      <li><a href="#cmd-update">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        update</a></li>
+      <li><a href="#cmd-update-all">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        update-all</a></li>
+      <li><a href="#cmd-uninstall">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        uninstall</a></li>
+      <li><a href="#cmd-list">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        list</a></li>
+      <li><a href="#cmd-search">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        search</a></li>
+      <li><a href="#cmd-info">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        info</a></li>
+      <li><a href="#cmd-verify-validate">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        verify &amp; validate</a></li>
+      <li><a href="#cmd-repair-rollback">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001.08 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1.08z"/></svg>
+        repair &amp; rollback</a></li>
+    </ul>
+  </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-heading">Advanced</div>
+    <ul class="sidebar-nav">
+      <li><a href="#cmd-export-import">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        export &amp; import</a></li>
+      <li><a href="#cmd-self-update">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        self-update &amp; self-repair</a></li>
+      <li><a href="#cmd-utilities">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        doctor, clean, trust &amp; path</a></li>
+      <li><a href="#troubleshooting">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Troubleshooting</a></li>
+    </ul>
+  </div>
+</aside>
+
+<!-- ======================== MAIN LAYOUT ======================== -->
+<div class="layout">
+
+  <!-- ======================== MAIN CONTENT ======================== -->
+  <main class="main doc">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="#">CMAM</a>
+      <span class="sep">/</span>
+      <span>Documentation</span>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- INTRODUCTION                                                  -->
+    <!-- ============================================================ -->
+    <h1 id="introduction">CMAM Documentation</h1>
+    <p class="subtitle">Connor Merk App Manager — A lightweight package manager for installing and managing Connor Merk's applications on Windows.</p>
+
+    <p>
+      <span class="badge">v2.4.1</span>&ensp;
+      <span class="badge badge-blue">Windows</span>&ensp;
+      <span class="badge badge-green">MIT License</span>
+    </p>
+
+    <div class="card-grid" style="margin-top:28px;">
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <h4>Simple Installation</h4>
+        <p>One-command install for any supported application from the CMAM repository.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h4>Automatic PATH</h4>
+        <p>Installed apps are automatically added to your system PATH. Just restart your terminal.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        </div>
+        <h4>Version Control</h4>
+        <p>Install specific versions, update, rollback, and keep backups of previous releases.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h4>Checksum Verification</h4>
+        <p>SHA256 checksums ensure every downloaded binary is authentic and untampered.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09"/></svg>
+        </div>
+        <h4>Self-Updating</h4>
+        <p>Keep CMAM itself up to date with a single <code>self-update</code> command.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <h4>Export &amp; Import</h4>
+        <p>Export your app list to a manifest and re-import on a fresh machine in seconds.</p>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- INSTALLATION                                                  -->
+    <!-- ============================================================ -->
+    <h2 id="installation">Installation</h2>
+    <p>CMAM can be installed via the automated installer or manually. It requires <strong>Windows</strong> and installs to <code>C:\.cmam</code>.</p>
+
+    <h3 id="quick-install">Quick Install (Recommended)</h3>
+    <p>Run the following in PowerShell:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">PowerShell</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Download the installer</span>
+<span class="token-function">Invoke-WebRequest</span> <span class="token-operator">-</span>Uri <span class="token-string">"https://github.com/cmerk2021/cmam/releases/latest/download/install.exe"</span> <span class="token-operator">-</span>OutFile <span class="token-string">"install.exe"</span>
+
+<span class="token-comment"># Run the installer</span>
+.\install.exe</code></pre>
+    </div>
+
+    <p>Alternatively, download and run <code>install.exe</code> directly from the <a href="https://github.com/cmerk2021/cmam/releases/latest" target="_blank">latest release</a> or the <code>/dist</code> directory.</p>
+
+    <h4 id="installer-options">Installer Options</h4>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--version</code>, <code>-v</code></td><td>Install a specific version of CMAM</td></tr>
+          <tr><td><code>--skip-path</code></td><td>Skip adding CMAM to the system PATH</td></tr>
+          <tr><td><code>--force</code>, <code>-f</code></td><td>Force reinstall even if CMAM is already installed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="manual-install">Manual Installation</h3>
+    <div class="steps">
+      <div class="step" data-step="1">
+        <h4>Download the binary</h4>
+        <p>Download <code>cmam.exe</code> from the <a href="https://github.com/cmerk2021/cmam/releases/latest" target="_blank">latest release</a> on GitHub.</p>
+      </div>
+      <div class="step" data-step="2">
+        <h4>Create the directory</h4>
+        <p>Create the folder <code>C:\.cmam\scripts</code> if it doesn't already exist.</p>
+      </div>
+      <div class="step" data-step="3">
+        <h4>Place the executable</h4>
+        <p>Move <code>cmam.exe</code> into <code>C:\.cmam\scripts</code>.</p>
+      </div>
+      <div class="step" data-step="4">
+        <h4>Add to PATH</h4>
+        <p>Add <code>C:\.cmam\scripts</code> to your User PATH environment variable.</p>
+      </div>
+      <div class="step" data-step="5">
+        <h4>Restart your terminal</h4>
+        <p>Open a new terminal window and verify with <code>cmam --version</code>.</p>
+      </div>
+    </div>
+
+    <h3 id="updating-cmam">Updating CMAM</h3>
+    <p>Once installed, update CMAM by running:</p>
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> self-update</code></pre>
+    </div>
+
+    <div class="callout callout-info">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <div class="callout-body">
+        <div class="callout-title">Auto Update Checks</div>
+        <p>CMAM automatically checks for new versions every time you run a command. If a newer version is available, you'll see a notification prompting you to run <code>cmam self-update</code>.</p>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- DIRECTORY STRUCTURE                                            -->
+    <!-- ============================================================ -->
+    <h2 id="directory-structure">Directory Structure</h2>
+    <p>CMAM installs and manages everything under the <code>C:\.cmam</code> root directory:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">File System</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre class="dir-tree"><code><span class="dir">C:\.cmam\</span>
+├── <span class="dir">scripts\</span>          <span class="comment"># Installed app executables + CMAM itself</span>
+│   ├── <span class="file">cmam.exe</span>      <span class="comment"># CMAM executable</span>
+│   ├── <span class="file">myapp.exe</span>     <span class="comment"># Example installed app</span>
+│   └── <span class="file">helper.dll</span>    <span class="comment"># Example dependency file</span>
+├── <span class="dir">.cache\</span>           <span class="comment"># Temporary download cache</span>
+│   └── <span class="dir">backups\</span>      <span class="comment"># Versioned backups of updated apps</span>
+├── <span class="file">packages.json</span>     <span class="comment"># Installed packages metadata</span>
+└── <span class="file">packages.txt</span>      <span class="comment"># Package list (legacy)</span></code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Path</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>C:\.cmam\scripts\</code></td><td>All installed executables and dependency files live here. This folder is added to your PATH.</td></tr>
+          <tr><td><code>C:\.cmam\.cache\</code></td><td>Temporary files during downloads. Safely cleaned with <code>cmam clean</code>.</td></tr>
+          <tr><td><code>C:\.cmam\.cache\backups\</code></td><td>Versioned backups created during updates (e.g., <code>myapp_v1.0.0.exe.bak</code>).</td></tr>
+          <tr><td><code>C:\.cmam\packages.json</code></td><td>JSON metadata tracking every installed app, its version, and its dependency files.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- CLI REFERENCE                                                 -->
+    <!-- ============================================================ -->
+    <h2 id="cli-reference">CLI Reference</h2>
+    <p>Complete reference for all CMAM commands. Run <code>cmam --help</code> or <code>cmam &lt;command&gt; --help</code> for built-in usage info.</p>
+
+    <h6>Global Options</h6>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--version</code>, <code>-V</code></td><td>Show CMAM version and exit</td></tr>
+          <tr><td><code>--help</code></td><td>Show help message and exit</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ====================== install ====================== -->
+    <h3 id="cmd-install">cmam install</h3>
+    <p>Installs a specified application from the CMAM repository. Downloads the latest release (or a specific version), verifies the SHA256 checksum, places the executable in the scripts folder, handles dependency files, and ensures the PATH is configured.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Install the latest version</span>
+<span class="token-function">cmam</span> install &lt;app-name&gt;
+
+<span class="token-comment"># Install a specific version</span>
+<span class="token-function">cmam</span> install &lt;app-name&gt; <span class="token-operator">--</span>version <span class="token-number">1.2.0</span></code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Argument / Option</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>app_name</code></td><td>string</td><td>Yes</td><td>Name of the application to install</td></tr>
+          <tr><td><code>--version</code>, <code>-v</code></td><td>string</td><td>No</td><td>Specific version to install (e.g., <code>1.2.0</code>)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-tip">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <div class="callout-body">
+        <div class="callout-title">Tip</div>
+        <p>If a release contains multiple <code>.exe</code> assets, the primary one is renamed to <code>&lt;app-name&gt;.exe</code> and additional executables keep their original filenames. Dependency files listed in the manifest are also downloaded automatically.</p>
+      </div>
+    </div>
+
+    <!-- ====================== update ====================== -->
+    <h3 id="cmd-update">cmam update</h3>
+    <p>Updates an installed application to the latest version or a specified version. Automatically creates a backup of the current version before updating.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Update to the latest version</span>
+<span class="token-function">cmam</span> update &lt;app-name&gt;
+
+<span class="token-comment"># Update to a specific version</span>
+<span class="token-function">cmam</span> update &lt;app-name&gt; <span class="token-operator">--</span>version <span class="token-number">2.0.0</span>
+
+<span class="token-comment"># Update without keeping old backup</span>
+<span class="token-function">cmam</span> update &lt;app-name&gt; <span class="token-operator">--</span>no-keep-backup</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Argument / Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>app_name</code></td><td>string</td><td>—</td><td>Name of the application to update (required)</td></tr>
+          <tr><td><code>--version</code>, <code>-v</code></td><td>string</td><td><code>latest</code></td><td>Specific version to update to</td></tr>
+          <tr><td><code>--keep-backup</code>, <code>-k</code></td><td>flag</td><td><code>true</code></td><td>Keep a versioned backup of the old binary</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ====================== update-all ====================== -->
+    <h3 id="cmd-update-all">cmam update-all</h3>
+    <p>Checks all installed applications for available updates and bulk-updates them. Shows a summary table before proceeding and asks for confirmation.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Check and update all apps (with confirmation prompt)</span>
+<span class="token-function">cmam</span> update-all
+
+<span class="token-comment"># Skip confirmation</span>
+<span class="token-function">cmam</span> update-all <span class="token-operator">--</span>yes
+
+<span class="token-comment"># Update all without keeping backups</span>
+<span class="token-function">cmam</span> update-all <span class="token-operator">--</span>no-keep-backup</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--yes</code>, <code>-y</code></td><td>flag</td><td><code>false</code></td><td>Skip the confirmation prompt</td></tr>
+          <tr><td><code>--keep-backup</code>, <code>-k</code></td><td>flag</td><td><code>true</code></td><td>Keep backups of old binaries</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ====================== uninstall ====================== -->
+    <h3 id="cmd-uninstall">cmam uninstall</h3>
+    <p>Removes an installed application, its dependency files, and optionally its backups. Shared dependencies (used by other installed apps) are preserved.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Uninstall an app (removes backups too)</span>
+<span class="token-function">cmam</span> uninstall &lt;app-name&gt;
+
+<span class="token-comment"># Uninstall but keep backup files</span>
+<span class="token-function">cmam</span> uninstall &lt;app-name&gt; <span class="token-operator">--</span>keep-backups</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Argument / Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>app_name</code></td><td>string</td><td>—</td><td>Name of the application to uninstall (required)</td></tr>
+          <tr><td><code>--keep-backups</code>, <code>-k</code></td><td>flag</td><td><code>false</code></td><td>Keep backup files for this app</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <div class="callout-body">
+        <div class="callout-title">Shared Dependencies</div>
+        <p>If a dependency file is shared with another installed app, it won't be removed. CMAM tracks which dependencies belong to which packages in <code>packages.json</code>.</p>
+      </div>
+    </div>
+
+    <!-- ====================== list ====================== -->
+    <h3 id="cmd-list">cmam list</h3>
+    <p>Displays a table of all installed applications, their versions, number of backups, and component files (dependencies).</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> list</code></pre>
+    </div>
+
+    <p>Example output columns: <strong>App Name</strong>, <strong>Version</strong>, <strong>Backups</strong>, <strong>Components</strong>.</p>
+
+    <!-- ====================== search ====================== -->
+    <h3 id="cmd-search">cmam search</h3>
+    <p>Searches the remote CMAM repository for applications matching a query. The search is case-insensitive and matches against app names.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> search &lt;query&gt;</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Argument</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>query</code></td><td>string</td><td>Yes</td><td>Search query to match against app names</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ====================== info ====================== -->
+    <h3 id="cmd-info">cmam info</h3>
+    <p>Shows detailed information about an application — repository link, description, latest version, installed version, update availability, backups, and component files. If you query a dependency or secondary executable, CMAM automatically redirects to the parent package.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> info &lt;app-name&gt;</code></pre>
+    </div>
+
+    <hr />
+
+    <!-- ====================== verify & validate ====================== -->
+    <h2 id="cmd-verify-validate">Verify &amp; Validate</h2>
+    <p>CMAM provides two commands for integrity checking of installed applications.</p>
+
+    <h3 id="cmd-verify">cmam verify</h3>
+    <p>Verifies the SHA256 checksum of a single installed app against the official release. Reports whether the binary is authentic or potentially corrupted.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> verify &lt;app-name&gt;</code></pre>
+    </div>
+
+    <h3 id="cmd-validate">cmam validate</h3>
+    <p>Validates <strong>all</strong> installed apps at once. Produces a table showing each app's verification status: Valid, Missing, Checksum Mismatch, or Unknown.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> validate</code></pre>
+    </div>
+
+    <hr />
+
+    <!-- ====================== repair & rollback ====================== -->
+    <h2 id="cmd-repair-rollback">Repair &amp; Rollback</h2>
+
+    <h3 id="cmd-repair">cmam repair</h3>
+    <p>Repairs a corrupted app by removing the existing executable and reinstalling the same version from the remote repository.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> repair &lt;app-name&gt;</code></pre>
+    </div>
+
+    <h3 id="cmd-rollback">cmam rollback</h3>
+    <p>Rolls back an app to a previously backed-up version. Without <code>--version</code>, it lists available backup versions. With <code>--version</code>, it restores the specified backup.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># List available backups</span>
+<span class="token-function">cmam</span> rollback &lt;app-name&gt;
+
+<span class="token-comment"># Rollback to a specific version</span>
+<span class="token-function">cmam</span> rollback &lt;app-name&gt; <span class="token-operator">--</span>version <span class="token-number">1.0.0</span></code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Argument / Option</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>app_name</code></td><td>string</td><td>Yes</td><td>Name of the application to roll back</td></tr>
+          <tr><td><code>--version</code>, <code>-v</code></td><td>string</td><td>No</td><td>Specific backup version to restore. Omit to list available backups.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warning">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div class="callout-body">
+        <div class="callout-title">Backups Required</div>
+        <p>Rollback only works if backups exist. Backups are created automatically during <code>cmam update</code> (when <code>--keep-backup</code> is enabled, which is the default). If you ran <code>cmam clean --backups</code>, old backups will be gone.</p>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- ====================== export & import ====================== -->
+    <h2 id="cmd-export-import">Export &amp; Import</h2>
+    <p>Move your CMAM environment between machines or share your setup with others.</p>
+
+    <h3 id="cmd-export">cmam export</h3>
+    <p>Exports your list of installed apps and their versions to a JSON manifest file.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Export to default file (cmam-export.json)</span>
+<span class="token-function">cmam</span> export
+
+<span class="token-comment"># Export to a custom file</span>
+<span class="token-function">cmam</span> export <span class="token-operator">--</span>output my-apps.json</code></pre>
+    </div>
+
+    <p>The exported JSON has the following structure:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">JSON</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code>{
+  <span class="token-property">"cmam_version"</span>: <span class="token-string">"2.4.1"</span>,
+  <span class="token-property">"apps"</span>: {
+    <span class="token-property">"myapp"</span>: { <span class="token-property">"version"</span>: <span class="token-string">"1.3.0"</span> },
+    <span class="token-property">"otherapp"</span>: { <span class="token-property">"version"</span>: <span class="token-string">"2.0.1"</span> }
+  }
+}</code></pre>
+    </div>
+
+    <h3 id="cmd-import">cmam import</h3>
+    <p>Installs all apps listed in a manifest file. Skips already-installed apps by default.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Import from a manifest file</span>
+<span class="token-function">cmam</span> import cmam-export.json
+
+<span class="token-comment"># Import and reinstall even if already present</span>
+<span class="token-function">cmam</span> import cmam-export.json <span class="token-operator">--</span>no-skip-existing</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Argument / Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>input_file</code></td><td>string</td><td>—</td><td>Path to the manifest JSON file (required)</td></tr>
+          <tr><td><code>--skip-existing</code>, <code>-s</code></td><td>flag</td><td><code>true</code></td><td>Skip apps that are already installed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr />
+
+    <!-- ====================== self-update & self-repair ====================== -->
+    <h2 id="cmd-self-update">Self-Update &amp; Self-Repair</h2>
+
+    <h3 id="cmd-selfupdate">cmam self-update</h3>
+    <p>Checks for a newer version of CMAM and updates itself. Creates a backup of the current CMAM binary, downloads the new version, and uses a batch script to replace the executable after the process exits.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> self-update</code></pre>
+    </div>
+
+    <h3 id="cmd-selfrepair">cmam self-repair</h3>
+    <p>Repairs the CMAM installation by downloading and running the latest installer with <code>-f</code> (force). Cleans up old CMAM cache, backups, and temp files. <strong>Does not affect installed applications.</strong></p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> self-repair</code></pre>
+    </div>
+
+    <div class="callout callout-tip">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <div class="callout-body">
+        <div class="callout-title">When to use self-repair</div>
+        <p>Use <code>self-repair</code> if <code>self-update</code> fails, if your CMAM binary is corrupted, or if the installation directories are in a broken state. It re-runs the full installer while preserving your installed apps.</p>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- ====================== Utility Commands ====================== -->
+    <h2 id="cmd-utilities">Utility Commands</h2>
+
+    <h3 id="cmd-doctor">cmam doctor</h3>
+    <p>Runs a comprehensive health diagnostic on your CMAM installation. Checks:</p>
+    <ul>
+      <li>Required directories exist (<code>root</code>, <code>cache</code>, <code>scripts</code>, <code>backups</code>)</li>
+      <li><code>packages.json</code> is valid and not corrupted</li>
+      <li>Scripts folder is in your PATH</li>
+      <li>All registered apps have matching executables</li>
+      <li>No orphaned executables in the scripts folder</li>
+      <li>GitHub API is reachable</li>
+      <li>Remote manifest is accessible</li>
+      <li>Adequate disk space available</li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> doctor</code></pre>
+    </div>
+
+    <h3 id="cmd-clean">cmam clean</h3>
+    <p>Cleans up cache files, temporary downloads, and optionally orphaned apps and backups.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Clean cache and orphans (default)</span>
+<span class="token-function">cmam</span> clean
+
+<span class="token-comment"># Also delete all backups (use with caution!)</span>
+<span class="token-function">cmam</span> clean <span class="token-operator">--</span>backups
+
+<span class="token-comment"># Only clean cache, skip orphan removal</span>
+<span class="token-function">cmam</span> clean <span class="token-operator">--</span>no-orphans</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--cache</code> / <code>--no-cache</code></td><td>flag</td><td><code>true</code></td><td>Clean cache/temp files</td></tr>
+          <tr><td><code>--orphans</code> / <code>--no-orphans</code></td><td>flag</td><td><code>true</code></td><td>Remove orphaned executables not tracked in packages.json</td></tr>
+          <tr><td><code>--backups</code>, <code>-b</code></td><td>flag</td><td><code>false</code></td><td>Also remove <strong>all</strong> backup files (asks for confirmation)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      <div class="callout-body">
+        <div class="callout-title">Danger</div>
+        <p>Using <code>--backups</code> permanently deletes all versioned backups. You will not be able to use <code>cmam rollback</code> afterward. This action cannot be undone.</p>
+      </div>
+    </div>
+
+    <h3 id="cmd-trust">cmam trust</h3>
+    <p>Displays the trust/verification status of all installed applications by comparing local SHA256 checksums against the official releases. Shows a table with statuses: <span class="badge badge-green">Trusted</span>, <span class="badge badge-red">Untrusted</span>, <span class="badge badge-yellow">Unknown</span>, or <span class="badge badge-red">Missing</span>.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-function">cmam</span> trust</code></pre>
+    </div>
+
+    <h3 id="cmd-path">cmam path</h3>
+    <p>Checks whether the CMAM scripts folder (<code>C:\.cmam\scripts</code>) is in your User PATH. Optionally re-adds it.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">Terminal</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code><span class="token-comment"># Check PATH status</span>
+<span class="token-function">cmam</span> path
+
+<span class="token-comment"># Add to PATH if missing</span>
+<span class="token-function">cmam</span> path <span class="token-operator">--</span>add</code></pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--add</code>, <code>-a</code></td><td>flag</td><td><code>false</code></td><td>Add the scripts folder to PATH if not present</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- COMMAND QUICK REFERENCE                                       -->
+    <!-- ============================================================ -->
+    <h2 id="quick-reference">Quick Reference</h2>
+    <p>All available commands at a glance:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Command</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>cmam install &lt;app&gt;</code></td><td>Install an application</td></tr>
+          <tr><td><code>cmam update &lt;app&gt;</code></td><td>Update an installed application</td></tr>
+          <tr><td><code>cmam update-all</code></td><td>Update all installed applications</td></tr>
+          <tr><td><code>cmam uninstall &lt;app&gt;</code></td><td>Uninstall an application</td></tr>
+          <tr><td><code>cmam list</code></td><td>List all installed applications</td></tr>
+          <tr><td><code>cmam search &lt;query&gt;</code></td><td>Search for available applications</td></tr>
+          <tr><td><code>cmam info &lt;app&gt;</code></td><td>Show details about an application</td></tr>
+          <tr><td><code>cmam verify &lt;app&gt;</code></td><td>Verify checksum of a single app</td></tr>
+          <tr><td><code>cmam validate</code></td><td>Validate checksums of all installed apps</td></tr>
+          <tr><td><code>cmam repair &lt;app&gt;</code></td><td>Repair a corrupted app by reinstalling</td></tr>
+          <tr><td><code>cmam rollback &lt;app&gt;</code></td><td>Roll back to a previous backup version</td></tr>
+          <tr><td><code>cmam export</code></td><td>Export installed apps to a manifest</td></tr>
+          <tr><td><code>cmam import &lt;file&gt;</code></td><td>Import and install apps from a manifest</td></tr>
+          <tr><td><code>cmam self-update</code></td><td>Update CMAM itself</td></tr>
+          <tr><td><code>cmam self-repair</code></td><td>Repair the CMAM installation</td></tr>
+          <tr><td><code>cmam doctor</code></td><td>Run health diagnostics</td></tr>
+          <tr><td><code>cmam clean</code></td><td>Clean up cache and temp files</td></tr>
+          <tr><td><code>cmam trust</code></td><td>Show trust status of installed apps</td></tr>
+          <tr><td><code>cmam path</code></td><td>Check or fix PATH configuration</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- TYPICAL WORKFLOWS                                             -->
+    <!-- ============================================================ -->
+    <h2 id="workflows">Typical Workflows</h2>
+
+    <h3 id="workflow-fresh">Fresh Setup</h3>
+    <div class="steps">
+      <div class="step" data-step="1">
+        <h4>Install CMAM</h4>
+        <p>Download and run the installer, or use the PowerShell one-liner above.</p>
+      </div>
+      <div class="step" data-step="2">
+        <h4>Search for apps</h4>
+        <p>Run <code>cmam search &lt;keyword&gt;</code> to find available applications.</p>
+      </div>
+      <div class="step" data-step="3">
+        <h4>Install your apps</h4>
+        <p>Run <code>cmam install &lt;app-name&gt;</code> for each application you need.</p>
+      </div>
+      <div class="step" data-step="4">
+        <h4>Export your setup</h4>
+        <p>Run <code>cmam export</code> to save your app list. Keep the manifest for future migrations.</p>
+      </div>
+    </div>
+
+    <h3 id="workflow-migrate">Migrating to a New Machine</h3>
+    <div class="steps">
+      <div class="step" data-step="1">
+        <h4>Export from old machine</h4>
+        <p>Run <code>cmam export --output my-setup.json</code> and copy the file to the new machine.</p>
+      </div>
+      <div class="step" data-step="2">
+        <h4>Install CMAM on new machine</h4>
+        <p>Install CMAM via the normal installer.</p>
+      </div>
+      <div class="step" data-step="3">
+        <h4>Import your apps</h4>
+        <p>Run <code>cmam import my-setup.json</code> to install all your apps at once.</p>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- TROUBLESHOOTING                                               -->
+    <!-- ============================================================ -->
+    <h2 id="troubleshooting">Troubleshooting</h2>
+
+    <details>
+      <summary>CMAM is not recognized as a command</summary>
+      <div class="details-content">
+        <p>Make sure <code>C:\.cmam\scripts</code> is in your User PATH. You can check and fix this by running <code>cmam path --add</code> from a working installation, or manually add the directory in Windows Settings &gt; Environment Variables. Always restart your terminal after PATH changes.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Download fails or checksum mismatch</summary>
+      <div class="details-content">
+        <p>Check your internet connection first. The GitHub API may also be temporarily unavailable. Try again in a few minutes. If the problem persists, run <code>cmam doctor</code> to check network connectivity and manifest accessibility.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Permission errors</summary>
+      <div class="details-content">
+        <p>Some operations (especially PATH modifications) may require administrator privileges. Try running your terminal as Administrator. The <code>cmam path --add</code> command modifies the <code>HKEY_CURRENT_USER\Environment</code> registry key.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>App binary appears corrupted</summary>
+      <div class="details-content">
+        <p>Run <code>cmam verify &lt;app-name&gt;</code> to check the file's integrity. If the checksum doesn't match, run <code>cmam repair &lt;app-name&gt;</code> to re-download and reinstall the same version.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>An update broke my app</summary>
+      <div class="details-content">
+        <p>If backups are available, run <code>cmam rollback &lt;app-name&gt;</code> to see backup versions, then <code>cmam rollback &lt;app-name&gt; --version X.Y.Z</code> to restore. Backups are created automatically during updates unless you used <code>--no-keep-backup</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>CMAM itself is broken</summary>
+      <div class="details-content">
+        <p>If <code>cmam self-update</code> fails, try <code>cmam self-repair</code>. This downloads the latest installer and force-reinstalls CMAM while preserving all your installed applications. As a last resort, do a manual installation.</p>
+      </div>
+    </details>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- VERSION PARSING                                               -->
+    <!-- ============================================================ -->
+    <h2 id="versioning">Version Scheme</h2>
+    <p>CMAM uses <a href="https://semver.org" target="_blank">Semantic Versioning</a> (<code>MAJOR.MINOR.PATCH</code>) with optional pre-release tags. The version parser supports:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Format</th><th>Example</th><th>Sort Priority</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Stable release</td><td><code>2.4.1</code></td><td>Highest</td></tr>
+          <tr><td>Release candidate</td><td><code>2.5.0-rc</code></td><td>High</td></tr>
+          <tr><td>Beta</td><td><code>2.5.0-beta</code></td><td>Medium</td></tr>
+          <tr><td>Alpha</td><td><code>2.5.0-alpha</code></td><td>Lowest</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Version tags in GitHub releases should be prefixed with <code>v</code> (e.g., <code>v2.4.1</code>). CMAM strips the <code>v</code> prefix automatically.</p>
+
+    <hr />
+
+    <!-- ============================================================ -->
+    <!-- LINKS                                                         -->
+    <!-- ============================================================ -->
+    <h2 id="links">Links</h2>
+    <ul>
+      <li><a href="https://github.com/cmerk2021/cmam" target="_blank">GitHub Repository</a></li>
+      <li><a href="https://github.com/cmerk2021/cmam/issues" target="_blank">Issue Tracker</a></li>
+      <li><a href="https://github.com/cmerk2021/cmam/releases" target="_blank">Releases</a></li>
+    </ul>
+
+    <p style="margin-top:24px;font-size:.85rem;color:var(--text-muted);">Copyright &copy; 2026 Connor Merk. All rights reserved.</p>
+
+    <!-- ============================================================ -->
+    <!-- FOOTER NAV                                                    -->
+    <!-- ============================================================ -->
+    <div class="doc-footer">
+      <a href="#introduction">
+        <span class="label">&larr; Top</span>
+        <span class="title">Introduction</span>
+      </a>
+      <a href="https://github.com/cmerk2021/cmam" target="_blank" class="next">
+        <span class="label">View on &rarr;</span>
+        <span class="title">GitHub</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- ======================== ON THIS PAGE (TOC) ======================== -->
+  <nav class="toc" id="toc">
+    <div class="toc-title">On This Page</div>
+    <ul class="toc-list" id="tocList">
+      <li><a href="#installation">Installation</a></li>
+      <li class="toc-h3"><a href="#quick-install">Quick Install</a></li>
+      <li class="toc-h3"><a href="#manual-install">Manual Installation</a></li>
+      <li class="toc-h3"><a href="#updating-cmam">Updating CMAM</a></li>
+      <li><a href="#directory-structure">Directory Structure</a></li>
+      <li><a href="#cli-reference">CLI Reference</a></li>
+      <li class="toc-h3"><a href="#cmd-install">install</a></li>
+      <li class="toc-h3"><a href="#cmd-update">update</a></li>
+      <li class="toc-h3"><a href="#cmd-update-all">update-all</a></li>
+      <li class="toc-h3"><a href="#cmd-uninstall">uninstall</a></li>
+      <li class="toc-h3"><a href="#cmd-list">list</a></li>
+      <li class="toc-h3"><a href="#cmd-search">search</a></li>
+      <li class="toc-h3"><a href="#cmd-info">info</a></li>
+      <li><a href="#cmd-verify-validate">Verify &amp; Validate</a></li>
+      <li><a href="#cmd-repair-rollback">Repair &amp; Rollback</a></li>
+      <li><a href="#cmd-export-import">Export &amp; Import</a></li>
+      <li><a href="#cmd-self-update">Self-Update &amp; Self-Repair</a></li>
+      <li><a href="#cmd-utilities">Utility Commands</a></li>
+      <li class="toc-h3"><a href="#cmd-doctor">doctor</a></li>
+      <li class="toc-h3"><a href="#cmd-clean">clean</a></li>
+      <li class="toc-h3"><a href="#cmd-trust">trust</a></li>
+      <li class="toc-h3"><a href="#cmd-path">path</a></li>
+      <li><a href="#quick-reference">Quick Reference</a></li>
+      <li><a href="#workflows">Typical Workflows</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+      <li><a href="#versioning">Version Scheme</a></li>
+      <li><a href="#links">Links</a></li>
+    </ul>
+  </nav>
+
+</div><!-- /layout -->
+
+<!-- ======================== SCRIPTS ======================== -->
+<script>
+  // ---- Theme Toggle ----
+  const root = document.documentElement;
+  const toggle = document.getElementById('themeToggle');
+  const stored = localStorage.getItem('theme');
+  if (stored) root.setAttribute('data-theme', stored);
+
+  function resolvedTheme() {
+    const t = root.getAttribute('data-theme');
+    if (t === 'auto') return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return t;
+  }
+
+  toggle.addEventListener('click', () => {
+    const next = resolvedTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+
+  // ---- Copy Code ----
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('pre code');
+    navigator.clipboard.writeText(code.textContent).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy`;
+      }, 2000);
+    });
+  }
+
+  // ---- TOC Active Highlight on Scroll ----
+  const tocLinks = document.querySelectorAll('#tocList a');
+  const headings = [];
+  tocLinks.forEach(link => {
+    const id = link.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) headings.push({ id, el, link });
+  });
+
+  function updateToc() {
+    let current = headings[0]?.id;
+    const offset = 100;
+    for (const h of headings) {
+      if (h.el.getBoundingClientRect().top <= offset) current = h.id;
+    }
+    tocLinks.forEach(l => l.classList.remove('active'));
+    const active = document.querySelector(`#tocList a[href="#${current}"]`);
+    if (active) active.classList.add('active');
+  }
+  window.addEventListener('scroll', updateToc, { passive: true });
+  updateToc();
+
+  // ---- Sidebar Active Link ----
+  function updateSidebarActive() {
+    const hash = window.location.hash || '#introduction';
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === hash);
+    });
+  }
+  window.addEventListener('hashchange', updateSidebarActive);
+  updateSidebarActive();
+
+  // ---- Sidebar Mobile Toggle ----
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const hamburger = document.getElementById('hamburgerBtn');
+
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+  // Close sidebar on nav click (mobile)
+  document.querySelectorAll('.sidebar-nav a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth <= 860) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+      }
+    });
+  });
+</script>
+</body>
+</html>
