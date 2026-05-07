@@ -31,7 +31,7 @@ from typing import Optional, List
 # ║  CONSTANTS & GLOBALS                                                       ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
-CMAM_VERSION = "2.4.1"
+CMAM_VERSION = "2.4.2"
 CMAM_ROOT = r"C:\.cmam"
 CMAM_CACHE = os.path.join(CMAM_ROOT, ".cache")
 CMAM_SCRIPTS = os.path.join(CMAM_ROOT, "scripts")
@@ -1712,7 +1712,15 @@ def doctor():
         for filename in os.listdir(CMAM_SCRIPTS):
             if filename.endswith('.exe'):
                 app_name = filename[:-4]
-                if app_name not in data and app_name != "cmam":
+                if app_name == "cmam":
+                    continue
+                # If the exe isn't a registered app, it may be a component/dependency
+                # of another installed package. Treat those as non-orphaned.
+                if app_name not in data:
+                    parent = find_parent_package(app_name)
+                    if parent:
+                        console.print(f"  [dim]ℹ[/dim] {filename} is a component of installed app: {parent}")
+                        continue
                     console.print(f"  [yellow]⚠[/yellow] Orphaned: {filename}")
                     orphans.append(app_name)
                     warnings.append(f"Orphaned executable: {filename}")
